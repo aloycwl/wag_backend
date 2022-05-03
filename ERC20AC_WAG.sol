@@ -1,5 +1,5 @@
 pragma solidity^0.8.13;//SPDX-License-Identifier:None
-contract ERC20AC_WeAreCasino{
+contract ERC20AC_WeAreGamblers{
     event Transfer(address indexed from,address indexed to,uint256 value);
     event Approval(address indexed owner,address indexed spender,uint256 value);
     mapping(address=>uint256)private _balances;
@@ -7,8 +7,8 @@ contract ERC20AC_WeAreCasino{
     uint256 private _totalSupply;
     modifier onlyAccess(){require(_access[msg.sender]);_;}
     constructor(){_access[msg.sender]=true;}
-    function name()external pure returns(string memory){return"We Are Casino";}
-    function symbol()external pure returns(string memory){return"WAC";}
+    function name()external pure returns(string memory){return"We Are Gamblers";}
+    function symbol()external pure returns(string memory){return"WAG";}
     function decimals()external pure returns(uint8){return 18;}
     function totalSupply()external view returns(uint256){return _totalSupply;}
     function balanceOf(address account)external view returns(uint256){return _balances[account];}

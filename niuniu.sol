@@ -52,8 +52,7 @@ contract niuniu{
             room[a].betSize=b; //Set the room bet size
         }
         require(player[m].balance>=room[a].betSize);
-        player[m].playing=true;
-        player[m].room=a; //In case player disconnect
+        (player[m].playing,player[m].room)=(true,a); //In case player disconnect
         room[a].players.push(m); //Add a player
         room[a].playerCount++;
     }}
@@ -120,8 +119,7 @@ contract niuniu{
                 }
                 count%=10; //Remove the front number
                 count=count==0?10:count;
-                player[r[i]].points=count; //10 being highest
-                highest=count>=highest?count:highest;
+                (player[r[i]].points,highest)=(count,count>=highest?count:highest); //10 being highest
             }
         }
         for(i=0;i<rl;i++){ //Getting number of winners

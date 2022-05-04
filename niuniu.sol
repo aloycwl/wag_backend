@@ -78,10 +78,12 @@ contract niuniu{
         uint256 i;
         uint256 j;
         uint256 ran;
+        uint256 bs=room[a].betSize;
         for(i=0;i<room[a].players.length;i++) //Number of active players in the room
-        if(player[room[a].players[i]].playing&&player[msg.sender].balance>=room[a].betSize){
-            player[room[a].players[i]].balance-=room[a].betSize; //Generate pool amount
-            room[a].balance+=room[a].betSize;
+        if(player[room[a].players[i]].playing&&player[msg.sender].balance>=bs){
+        //Player is set to play and have enough money    
+            player[room[a].players[i]].balance-=bs; //Generate pool amount
+            room[a].balance+=bs;
             //Only when they are choose to play the round and have enough tokens
             for(j=0;j<5;j++){ //Only distribute 5 cards
                 ran=hash%count; //Pick the remaining cards
@@ -93,42 +95,46 @@ contract niuniu{
         }
     }}
     function CHECK(uint256 a)external{unchecked{
-        require(msg.sender==room[a].players[0]&&room[a].balance>0); //Only host can check & have dealt
+        uint256 rb=room[a].balance;
+        address[]memory r=room[a].players;
+        require(msg.sender==r[0]&&rb>0); //Only host can check & have dealt
         uint256 highest;
         uint256 i;
         uint256 j;
         uint256 count;
-        uint256 winnerCount; 
-        for(i=0;i<room[a].players.length;i++) //Number of active players in the room
-        if(player[room[a].players[i]].cards[0]>0){ //If player is playing with more than 1 card
+        uint256 winnerCount;
+        for(i=0;i<r.length;i++) //Number of active players in the room
+        if(player[r[i]].cards[0]>0){ //If player is playing with more than 1 card
             count=0;
             for(j=0;j<5;j++){ //Go through every cards
-                count+=cardVal(player[room[a].players[i]].cards[j]); //Calculate single card value
-                player[room[a].players[i]].cards[j]=0;
+                count+=cardVal(player[r[i]].cards[j]); //Calculate single card value
+                player[r[i]].cards[j]=0;
             }
             count%=10; //Remove the front number
             count=count==0?10:count;
-            player[room[a].players[i]].points=count; //10 being highest
+            player[r[i]].points=count; //10 being highest
             highest=count>=highest?count:highest;
         }
-        for(i=0;i<room[a].players.length;i++)//Getting number of winners
-        if(player[room[a].players[i]].points==highest)winnerCount++;
-        player[room[a].players[0]].balance+=(room[a].balance*5/100); //5% for host (Maybe safemath issue)
-        winnerCount=room[a].balance=room[a].balance*9/10/winnerCount; //Minus 5% for admin and divide winnings
-        for(i=0;i<room[a].players.length;i++){ //Distribute tokens
-            if(player[room[a].players[i]].points==highest)player[room[a].players[i]].balance+=winnerCount;
-            if(player[room[a].players[i]].balance<room[a].betSize)LEAVE(a,room[a].players[i]);
+        for(i=0;i<r.length;i++)//Getting number of winners
+        if(player[r[i]].points==highest)winnerCount++;
+        player[r[0]].balance+=(rb*5/100); //5% for host (Maybe safemath issue)
+        winnerCount=rb*9/10/winnerCount; //Minus 5% for admin and divide winnings
+        for(i=0;i<r.length;i++){ //Distribute tokens
+            if(player[r[i]].points==highest)player[r[i]].balance+=winnerCount;
+            if(player[r[i]].balance<room[a].betSize)LEAVE(a,r[i]);
         }
         room[a].balance=0;
     }}
     function getRoomInfo(uint256 a)external view returns(address[]memory b,
     uint256[5]memory c,uint256[5]memory d,uint256[5]memory e,uint256[5]memory f,uint256[5]memory g){
         b=room[a].players; //Only get cards if there is a player
-        if(room[a].players.length>0)c=player[room[a].players[0]].cards;
-        if(room[a].players.length>1)d=player[room[a].players[1]].cards;
-        if(room[a].players.length>2)e=player[room[a].players[2]].cards;
-        if(room[a].players.length>3)f=player[room[a].players[3]].cards;
-        if(room[a].players.length>4)g=player[room[a].players[4]].cards;
+        uint256 h=room[a].players.length;
+        address[]memory r=room[a].players;
+        if(h>0)c=player[r[0]].cards;
+        if(h>1)d=player[r[1]].cards;
+        if(h>2)e=player[r[2]].cards;
+        if(h>3)f=player[r[3]].cards;
+        if(h>4)g=player[r[4]].cards;
     }
     function getNiu(address a)public view returns(uint256 c,uint256 d,uint256 e,uint256 f){unchecked{
         c=99;

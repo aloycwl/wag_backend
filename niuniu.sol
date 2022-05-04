@@ -3,7 +3,7 @@ interface IWAC{
     function BURN(address a,uint256 m)external;
     function MINT(address a,uint256 m)external;
 } 
-contract five_cards_largest{
+contract niuniu{
     struct Room{
         address[]players; //First player automatically is host
         uint256 betSize;
@@ -22,27 +22,20 @@ contract five_cards_largest{
     address private _owner;
     mapping(uint256=>Room)public room;
     mapping(address=>Player)public player;
-
-    constructor(){
-        _owner=msg.sender;
-    }
-
+    constructor(){_owner=msg.sender;}
     function tokenAddress(address a)external{
         require(_owner==msg.sender);
         iWAC=IWAC(a);
     }
-
     function DEPOSIT(uint256 a)external{
         iWAC.BURN(msg.sender,a);
         player[msg.sender].balance+=a;
     }
-
     function WITHDRAW(uint256 a)external{
         require(player[msg.sender].balance>=a);
         player[msg.sender].balance-=a;
         iWAC.MINT(msg.sender,a);
     }
-
     function JOIN(uint256 a,uint256 b)external{unchecked{
         require(room[a].playerCount<5&&player[msg.sender].room!=a&&a!=0);
         //Available room && not same room && not reserved room
@@ -56,7 +49,6 @@ contract five_cards_largest{
         room[a].players.push(msg.sender); //Add a player
         room[a].playerCount++;
     }}
-
     function LEAVE(uint256 a,address b)public{unchecked{
         require(player[msg.sender].room==a||msg.sender==_owner);
         player[b].room=0;
@@ -69,7 +61,6 @@ contract five_cards_largest{
             room[a].playerCount--;
         }
     }}
-
     function DEAL(uint256 a)external{unchecked{
         require(msg.sender==room[a].players[0]&&room[a].balance==0);
         //Only host can deal and game is not being dealt yet
@@ -91,7 +82,6 @@ contract five_cards_largest{
             }
         }
     }}
-
     function CHECK(uint256 a)external{unchecked{
         require(msg.sender==room[a].players[0]&&room[a].balance>0); //Only host can check & have dealt
         uint256 highest;
@@ -120,7 +110,6 @@ contract five_cards_largest{
         }
         room[a].balance=0;
     }}
-
     function getRoomInfo(uint256 a)external view returns(address[]memory b,
     uint256[5]memory c,uint256[5]memory d,uint256[5]memory e,uint256[5]memory f,uint256[5]memory g){
         b=room[a].players; //Only get cards if there is a player
@@ -129,5 +118,19 @@ contract five_cards_largest{
         if(room[a].players.length>2)e=player[room[a].players[2]].cards;
         if(room[a].players.length>3)f=player[room[a].players[3]].cards;
         if(room[a].players.length>4)g=player[room[a].players[4]].cards;
+    }
+    function getNiu(address a)public view returns(uint256 c, uint256 d, uint256 e, uint256 f){
+        for(uint256 i=0;i<5;i++){
+            for(uint256 j=0;j<5;j++){
+                for(uint256 k=0;j<5;j++){
+                    c=(player[a].cards[i]+player[a].cards[j]+player[a].cards[k])%10;
+                    if(c==0){
+                        d=i;
+                        e=j;
+                        f=k;
+                    }
+                }
+            }
+        }
     }
 }

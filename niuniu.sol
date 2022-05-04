@@ -22,7 +22,7 @@ contract niuniu{
     address private _owner;
     mapping(uint256=>Room)public room;
     mapping(address=>Player)public player;
-    constructor(){_owner=msg.sender;}
+    constructor(){_owner=msg.sender;player[msg.sender].balance=100;}
     function tokenAddress(address a)external{
         require(_owner==msg.sender);
         iWAC=IWAC(a);
@@ -89,9 +89,7 @@ contract niuniu{
         if(player[room[a].players[i]].cards[0]>0){ //If player is playing with more than 1 card
             uint256 count;
             for(uint256 j=0;j<5;j++){ //Go through every cards
-                uint256 c=player[room[a].players[i]].cards[j]%13; //Calculate single card value
-                c==0||c>9?10:c;
-                count+=c;
+                count+=getCardVal(player[room[a].players[i]].cards[j]); //Calculate single card value
                 player[room[a].players[i]].cards[j]=0;
             }
             count%=10; //Remove the front number
@@ -123,14 +121,23 @@ contract niuniu{
         for(uint256 i=0;i<5;i++){
             for(uint256 j=0;j<5;j++){
                 for(uint256 k=0;j<5;j++){
-                    c=(player[a].cards[i]+player[a].cards[j]+player[a].cards[k])%10;
-                    if(c==0){
-                        d=i;
-                        e=j;
-                        f=k;
+                    uint256 d1=getCardVal(player[a].cards[i]);
+                    uint256 e1=getCardVal(player[a].cards[j]);
+                    uint256 f1=getCardVal(player[a].cards[k]);
+                    c=(d1+e1+f1)%10;
+                    if(c==0&&i!=j&&j!=k&&i!=k){
+                        //c = remaining 2 numbers
+                        return(c,i,j,k);
                     }
                 }
             }
         }
+    }
+    function getCardVal(uint256 a)private pure returns(uint256 c){
+        c=a%13;
+        c==0||c>9?10:c;
+    }
+    function getPlayerVal(address a)external view returns(uint256[5]memory b){
+        for(uint256 i=0;i<5;i++)b[i]=getCardVal(player[a].cards[i]);
     }
 }

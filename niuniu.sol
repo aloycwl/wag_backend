@@ -1,3 +1,4 @@
+/* DEPLOYMENT: JOIN & DEAL to external */
 pragma solidity^0.8.13;//SPDX-License-Identifier:None
 interface IWAC{
     function BURN(address a,uint256 m)external;
@@ -22,7 +23,13 @@ contract niuniu{
     address private _owner;
     mapping(uint256=>Room)public room;
     mapping(address=>Player)public player;
-    constructor(){_owner=msg.sender;player[msg.sender].balance=100;}
+    constructor(){
+        _owner=msg.sender;
+        /* TESTING */
+        player[msg.sender].balance=100;
+        JOIN(1,10);
+        DEAL(1);
+    }
     function tokenAddress(address a)external{
         require(_owner==msg.sender);
         iWAC=IWAC(a);
@@ -36,7 +43,7 @@ contract niuniu{
         player[msg.sender].balance-=a;
         iWAC.MINT(msg.sender,a);
     }
-    function JOIN(uint256 a,uint256 b)external{unchecked{
+    function JOIN(uint256 a,uint256 b)public{unchecked{
         require(room[a].playerCount<5&&player[msg.sender].room!=a&&a!=0);
         //Available room && not same room && not reserved room
         if(room[a].players.length==0){ //Initiate the room
@@ -55,13 +62,13 @@ contract niuniu{
         if(room[a].players.length==1)delete room[a]; //Delete room if no more player
         else{
             uint256 c; //Move players up
-            for(uint256 i=0;i<room[a].players.length;i++)if(room[a].players[i]==msg.sender)c=i;
+            for(uint256 i=0;i<room[a].players.length;i++)if(room[a].players[i]==b)c=i;
             room[a].players[c]=room[a].players[room[a].players.length-1];
             room[a].players.pop();
             room[a].playerCount--;
         }
     }}
-    function DEAL(uint256 a)external{unchecked{
+    function DEAL(uint256 a)public{unchecked{
         require(msg.sender==room[a].players[0]&&room[a].balance==0);
         //Only host can deal and game is not being dealt yet
         uint256[52]memory table=[uint256(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,
@@ -126,18 +133,22 @@ contract niuniu{
                     uint256 f1=getCardVal(player[a].cards[k]);
                     c=(d1+e1+f1)%10;
                     if(c==0&&i!=j&&j!=k&&i!=k){
-                        //c = remaining 2 numbers
+                        uint256 g=6; //Get the combination of last 2 numnbers
+                        uint256 h=6; //Declare 6 to avoid clashing with 0
+                        for(uint256 l=0;l<5;l++)
+                        if(l!=i&&l!=j&&l!=k)g==6?g=l:h=l;
+                        c=g+h;
                         return(c,i,j,k);
-                    }
+                    }else c=99;
                 }
             }
         }
     }
     function getCardVal(uint256 a)private pure returns(uint256 c){
         c=a%13;
-        c==0||c>9?10:c;
+        c=c==0||c>9?10:c;
     }
-    function getPlayerVal(address a)external view returns(uint256[5]memory b){
-        for(uint256 i=0;i<5;i++)b[i]=getCardVal(player[a].cards[i]);
+    function getPlayerVal()external view returns(uint256[5]memory b){
+        for(uint256 i=0;i<5;i++)b[i]=getCardVal(player[msg.sender].cards[i]);
     }
 }

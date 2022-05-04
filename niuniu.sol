@@ -96,7 +96,7 @@ contract niuniu{
         if(player[room[a].players[i]].cards[0]>0){ //If player is playing with more than 1 card
             uint256 count;
             for(uint256 j=0;j<5;j++){ //Go through every cards
-                count+=getCardVal(player[room[a].players[i]].cards[j]); //Calculate single card value
+                count+=cardVal(player[room[a].players[i]].cards[j]); //Calculate single card value
                 player[room[a].players[i]].cards[j]=0;
             }
             count%=10; //Remove the front number
@@ -125,30 +125,24 @@ contract niuniu{
         if(room[a].players.length>4)g=player[room[a].players[4]].cards;
     }
     function getNiu(address a)public view returns(uint256 c, uint256 d, uint256 e, uint256 f){
-        for(uint256 i=0;i<5;i++){
-            for(uint256 j=0;j<5;j++){
-                for(uint256 k=0;j<5;j++){
-                    uint256 d1=getCardVal(player[a].cards[i]);
-                    uint256 e1=getCardVal(player[a].cards[j]);
-                    uint256 f1=getCardVal(player[a].cards[k]);
-                    c=(d1+e1+f1)%10;
-                    if(c==0&&i!=j&&j!=k&&i!=k){
-                        uint256 g=6; //Get the combination of last 2 numnbers
-                        uint256 h=6; //Declare 6 to avoid clashing with 0
-                        for(uint256 l=0;l<5;l++)
-                        if(l!=i&&l!=j&&l!=k)g==6?g=l:h=l;
-                        c=g+h;
-                        return(c,i,j,k);
-                    }else c=99;
-                }
+        c=99;
+        uint256[5]memory ca=player[a].cards;
+        for(uint256 i=0;i<5;i++)
+        for(uint256 j=0;j<5;j++)
+        for(uint256 k=0;j<5;j++){
+            c=(cardVal(ca[i])+cardVal(ca[j])+cardVal(ca[k]))%10;
+            if(c==0&&i!=j&&j!=k&&i!=k){
+                for(uint256 l=0;l<5;l++)
+                if(l!=i&&l!=j&&l!=k)c+=cardVal(player[a].cards[l]);
+                return(c,i,j,k);
             }
         }
     }
-    function getCardVal(uint256 a)private pure returns(uint256 c){
+    function cardVal(uint256 a)private pure returns(uint256 c){
         c=a%13;
         c=c==0||c>9?10:c;
     }
     function getPlayerVal()external view returns(uint256[5]memory b){
-        for(uint256 i=0;i<5;i++)b[i]=getCardVal(player[msg.sender].cards[i]);
+        for(uint256 i=0;i<5;i++)b[i]=cardVal(player[msg.sender].cards[i]);
     }
 }

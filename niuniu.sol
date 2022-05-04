@@ -127,14 +127,17 @@ contract niuniu{
     function getNiu(address a)public view returns(uint256 c, uint256 d, uint256 e, uint256 f){
         c=99;
         uint256[5]memory ca=player[a].cards;
-        for(uint256 i=0;i<5;i++)
-        for(uint256 j=0;j<5;j++)
-        for(uint256 k=0;j<5;j++){
-            c=(cardVal(ca[i])+cardVal(ca[j])+cardVal(ca[k]))%10;
-            if(c==0&&i!=j&&j!=k&&i!=k){
-                for(uint256 l=0;l<5;l++)
-                if(l!=i&&l!=j&&l!=k)c+=cardVal(player[a].cards[l]);
-                return(c,i,j,k);
+        uint256 c1;
+        uint256 i;
+        uint256 j;
+        uint256 k;
+        uint256 l;
+        for(i=0;i<5;i++)for(j=0;j<5;j++)for(k=0;k<5;k++){
+            c1=(cardVal(ca[i])+cardVal(ca[j])+cardVal(ca[k]))%10;
+            if(c1==0&&i!=j&&j!=k&&i!=k){
+                for(l=0;l<5;l++)
+                if(l!=i&&l!=j&&l!=k)c1+=cardVal(ca[l]);
+                return(c1,i,j,k);
             }
         }
     }

@@ -72,14 +72,13 @@ contract niuniu{
         Room memory ra=room[a];
         require(msg.sender==ra.players[0]&&ra.balance==0);
         //Only host can deal and game is not being dealt yet
-        uint256[52]memory table=[uint256(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,
-        28,31,41,12,42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11];
-        uint256 hash=uint256(keccak256(abi.encodePacked(block.timestamp))); //Generate random long number
-        uint256 count=51; //Length of cards remaining
+        (uint256[52]memory table,uint256 hash,uint256 count,uint256 bs)=(
+            [uint256(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,
+            28,31,41,12,42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11],
+            uint256(keccak256(abi.encodePacked(block.timestamp))),51,ra.betSize);
         uint256 i;
         uint256 j;
         uint256 ran;
-        uint256 bs=ra.betSize;
         address rp;
         for(i=0;i<ra.players.length;i++){ //Number of active players in the room
             rp=ra.players[i];
@@ -89,9 +88,11 @@ contract niuniu{
                 room[a].balance+=bs;
                 //Only when they are choose to play the round and have enough tokens
                 for(j=0;j<5;j++){ //Only distribute 5 cards
-                    ran=hash%count; //Pick the remaining cards
+                    /*ran=hash%count; //Pick the remaining cards
                     player[rp].cards[j]=table[ran]; //Set the cards
-                    table[ran]=table[count]; //Move the last position to replace the current position
+                    table[ran]=table[count]; //Move the last position to replace the current position*/
+                    (ran,player[rp].cards[j],table[ran])=(hash%count,table[ran],table[count]);
+                    //Pick the remaining cards & move the last position to replace the current position
                     hash/=count; //Create different random
                     count--; //Take away the last position
                 }
@@ -99,9 +100,10 @@ contract niuniu{
         }
     }}
     function CHECK(uint256 a)external{unchecked{
-        (uint256 rb,address[]memory r)=(room[a].balance,room[a].players);
-        uint256 rl=r.length;
-        require(msg.sender==r[0]&&rb>0); //Only host can check & have dealt
+        Room memory r=room[a];
+        (uint256 rb,address[]memory rp,uint256 rs)=(r.balance,r.players,r.betSize);
+        uint256 rl=rp.length;
+        require(msg.sender==rp[0]&&rb>0); //Only host can check & have dealt
         uint256 highest;
         uint256 i;
         uint256 j;
@@ -109,26 +111,26 @@ contract niuniu{
         uint256 winnerCount;
         Player memory pi;
         for(i=0;i<rl;i++){ //Number of active players in the room
-            pi=player[r[i]];
+            pi=player[rp[i]];
             if(pi.cards[0]>0){ //If player has cards
                 count=0;
                 for(j=0;j<5;j++){ //Go through every cards
                     count+=cardVal(pi.cards[j]); //Calculate single card value
-                    player[r[i]].cards[j]=0;
+                    player[rp[i]].cards[j]=0;
                 }
                 count%=10; //Remove the front number
                 count=count==0?10:count;
-                (player[r[i]].points,highest)=(count,count>=highest?count:highest); //10 being highest
+                (player[rp[i]].points,highest)=(count,count>=highest?count:highest); //10 being highest
             }
         }
         for(i=0;i<rl;i++){ //Getting number of winners
-            pi=player[r[i]];
+            pi=player[rp[i]];
             if(pi.points==highest)winnerCount++;
-            player[r[0]].balance+=(rb*5/100); //5% for host (Maybe safemath issue)
+            player[rp[0]].balance+=(rb*5/100); //5% for host (Maybe safemath issue)
             winnerCount=rb*9/10/winnerCount; //Minus 5% for admin and divide winnings
             for(i=0;i<rl;i++){ //Distribute tokens
-                if(player[r[i]].points==highest)pi.balance+=winnerCount;
-                if(player[r[i]].balance<room[a].betSize)LEAVE(a,r[i]);
+                if(player[rp[i]].points==highest)pi.balance+=winnerCount;
+                if(player[rp[i]].balance<rs)LEAVE(a,rp[i]);
             }
         }
         room[a].balance=0;

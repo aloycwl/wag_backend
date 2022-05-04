@@ -124,7 +124,7 @@ contract niuniu{
         if(room[a].players.length>3)f=player[room[a].players[3]].cards;
         if(room[a].players.length>4)g=player[room[a].players[4]].cards;
     }
-    function getNiu(address a)public view returns(uint256 c, uint256 d, uint256 e, uint256 f){
+    function getNiu(address a)public view returns(uint256 c,uint256 d,uint256 e,uint256 f){unchecked{
         c=99;
         uint256[5]memory ca=player[a].cards;
         uint256 c1;
@@ -140,7 +140,7 @@ contract niuniu{
                 return(c1,i,j,k);
             }
         }
-    }
+    }}
     function cardVal(uint256 a)private pure returns(uint256 c){
         c=a%13;
         c=c==0||c>9?10:c;

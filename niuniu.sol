@@ -75,13 +75,16 @@ contract niuniu{
         28,31,41,12,42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11];
         uint256 hash=uint256(keccak256(abi.encodePacked(block.timestamp))); //Generate random long number
         uint256 count=51; //Length of cards remaining
-        for(uint256 i=0;i<room[a].players.length;i++) //Number of active players in the room
+        uint256 i;
+        uint256 j;
+        uint256 ran;
+        for(i=0;i<room[a].players.length;i++) //Number of active players in the room
         if(player[room[a].players[i]].playing&&player[msg.sender].balance>=room[a].betSize){
             player[room[a].players[i]].balance-=room[a].betSize; //Generate pool amount
             room[a].balance+=room[a].betSize;
             //Only when they are choose to play the round and have enough tokens
-            for(uint256 j=0;j<5;j++){ //Only distribute 5 cards
-                uint256 ran=hash%count; //Pick the remaining cards
+            for(j=0;j<5;j++){ //Only distribute 5 cards
+                ran=hash%count; //Pick the remaining cards
                 player[room[a].players[i]].cards[j]=table[ran]; //Set the cards
                 table[ran]=table[count]; //Move the last position to replace the current position
                 hash/=count; //Create different random
@@ -92,10 +95,14 @@ contract niuniu{
     function CHECK(uint256 a)external{unchecked{
         require(msg.sender==room[a].players[0]&&room[a].balance>0); //Only host can check & have dealt
         uint256 highest;
-        for(uint256 i=0;i<room[a].players.length;i++) //Number of active players in the room
+        uint256 i;
+        uint256 j;
+        uint256 count;
+        uint256 winnerCount; 
+        for(i=0;i<room[a].players.length;i++) //Number of active players in the room
         if(player[room[a].players[i]].cards[0]>0){ //If player is playing with more than 1 card
-            uint256 count;
-            for(uint256 j=0;j<5;j++){ //Go through every cards
+            count=0;
+            for(j=0;j<5;j++){ //Go through every cards
                 count+=cardVal(player[room[a].players[i]].cards[j]); //Calculate single card value
                 player[room[a].players[i]].cards[j]=0;
             }
@@ -104,12 +111,11 @@ contract niuniu{
             player[room[a].players[i]].points=count; //10 being highest
             highest=count>=highest?count:highest;
         }
-        uint256 winnerCount; //Getting number of winners
-        for(uint256 i=0;i<room[a].players.length;i++)
+        for(i=0;i<room[a].players.length;i++)//Getting number of winners
         if(player[room[a].players[i]].points==highest)winnerCount++;
         player[room[a].players[0]].balance+=(room[a].balance*5/100); //5% for host (Maybe safemath issue)
         winnerCount=room[a].balance=room[a].balance*9/10/winnerCount; //Minus 5% for admin and divide winnings
-        for(uint256 i=0;i<room[a].players.length;i++){ //Distribute tokens
+        for(i=0;i<room[a].players.length;i++){ //Distribute tokens
             if(player[room[a].players[i]].points==highest)player[room[a].players[i]].balance+=winnerCount;
             if(player[room[a].players[i]].balance<room[a].betSize)LEAVE(a,room[a].players[i]);
         }
@@ -137,7 +143,7 @@ contract niuniu{
             if(c1==0&&i!=j&&j!=k&&i!=k){
                 for(l=0;l<5;l++)
                 if(l!=i&&l!=j&&l!=k)c1+=cardVal(ca[l]);
-                return(c1,i,j,k);
+                return(c1%10,i,j,k);
             }
         }
     }}

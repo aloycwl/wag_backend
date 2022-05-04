@@ -3,7 +3,7 @@ interface IWAC{
     function BURN(address a,uint256 m)external;
     function MINT(address a,uint256 m)external;
 } 
-contract NiuNiu{
+contract five_cards_largest{
     struct Room{
         address[]players; //First player automatically is host
         uint256 betSize;

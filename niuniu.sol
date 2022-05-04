@@ -88,9 +88,6 @@ contract niuniu{
                 room[a].balance+=bs;
                 //Only when they are choose to play the round and have enough tokens
                 for(j=0;j<5;j++){ //Only distribute 5 cards
-                    /*ran=hash%count; //Pick the remaining cards
-                    player[rp].cards[j]=table[ran]; //Set the cards
-                    table[ran]=table[count]; //Move the last position to replace the current position*/
                     (ran,player[rp].cards[j],table[ran])=(hash%count,table[ran],table[count]);
                     //Pick the remaining cards & move the last position to replace the current position
                     hash/=count; //Create different random
@@ -135,8 +132,8 @@ contract niuniu{
         }
         room[a].balance=0;
     }}
-    function getRoomInfo(uint256 a)external view returns(address[]memory b,
-    uint256[5]memory c,uint256[5]memory d,uint256[5]memory e,uint256[5]memory f,uint256[5]memory g){
+    function getRoomInfo(uint256 a)external view returns(address[]memory b,uint256[5]memory c
+        ,uint256[5]memory d,uint256[5]memory e,uint256[5]memory f,uint256[5]memory g){
         Room memory r=room[a];
         b=r.players; //Only get cards if there is a player
         (uint256 h,address[]memory rp)=(b.length,r.players);

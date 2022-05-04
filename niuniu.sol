@@ -99,8 +99,7 @@ contract niuniu{
         }
     }}
     function CHECK(uint256 a)external{unchecked{
-        uint256 rb=room[a].balance;
-        address[]memory r=room[a].players;
+        (uint256 rb,address[]memory r)=(room[a].balance,room[a].players);
         uint256 rl=r.length;
         require(msg.sender==r[0]&&rb>0); //Only host can check & have dealt
         uint256 highest;
@@ -136,14 +135,14 @@ contract niuniu{
     }}
     function getRoomInfo(uint256 a)external view returns(address[]memory b,
     uint256[5]memory c,uint256[5]memory d,uint256[5]memory e,uint256[5]memory f,uint256[5]memory g){
-        b=room[a].players; //Only get cards if there is a player
-        uint256 h=room[a].players.length;
-        address[]memory r=room[a].players;
-        if(h>0)c=player[r[0]].cards;
-        if(h>1)d=player[r[1]].cards;
-        if(h>2)e=player[r[2]].cards;
-        if(h>3)f=player[r[3]].cards;
-        if(h>4)g=player[r[4]].cards;
+        Room memory r=room[a];
+        b=r.players; //Only get cards if there is a player
+        (uint256 h,address[]memory rp)=(b.length,r.players);
+        if(h>0)c=player[rp[0]].cards;
+        if(h>1)d=player[rp[1]].cards;
+        if(h>2)e=player[rp[2]].cards;
+        if(h>3)f=player[rp[3]].cards;
+        if(h>4)g=player[rp[4]].cards;
     }
     function getNiu(address a)public view returns(uint256 c,uint256 d,uint256 e,uint256 f){unchecked{
         c=99;

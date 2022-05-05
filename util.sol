@@ -1,4 +1,4 @@
-pragma solidity^0.8.13;//SPDX-License-Identifier:None
+pragma solidity>0.8.0;//SPDX-License-Identifier:None
 contract util{
     /*
     Get the card final number

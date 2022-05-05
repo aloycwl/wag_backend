@@ -1,5 +1,5 @@
 /* DEPLOYMENT: JOIN & DEAL to external */
-pragma solidity^0.8.13;//SPDX-License-Identifier:None
+pragma solidity>0.8.0;//SPDX-License-Identifier:None
 interface IWAC{
     function BURN(address a,uint m)external;
     function MINT(address a,uint m)external;
@@ -78,13 +78,11 @@ contract niuniu{
             [uint(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,
             28,31,41,12,42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11],
             uint(keccak256(abi.encodePacked(block.timestamp))),51,room[a].betSize);
-        //address rp;
         for(uint i=0;i<room[a].players.length;i++){ //Number of active players in the room
             address rp=room[a].players[i];
             if(player[msg.sender].balance>=bs){
             //Player is set to play and have enough money    
-                player[rp].balance-=bs; //Generate pool amount
-                room[a].balance+=bs;
+                (player[rp].balance-=bs,room[a].balance+=bs); //Generate pool amount
                 //Only when they are choose to play the round and have enough tokens
                 for(uint j=0;j<5;j++){ //Only distribute 5 cards
                     uint ran=hash%count;
@@ -96,8 +94,8 @@ contract niuniu{
         }
     }}
     function CHECK(uint a)external{unchecked{
-        (uint rb,address[]memory rp,uint rs)=(room[a].balance,room[a].players,room[a].betSize);
-        uint rl=rp.length;
+        (uint rb,address[]memory rp,uint rs,uint rl)=
+            (room[a].balance,room[a].players,room[a].betSize,room[a].players.length);
         require(msg.sender==rp[0]); //Host check only
         require(rb>0); //Dealt
         uint highest;

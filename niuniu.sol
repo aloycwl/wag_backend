@@ -53,7 +53,7 @@ contract niuniu{
         require(player[msg.sender].balance>=room[a].betSize); //Have money to bet
         require(room[a].playerCount<5); //Not full
         require(player[msg.sender].room!=a); //Not same room
-        require(a!=0); //Not reserved room
+        require(a>0); //Not reserved room
         player[msg.sender].room=a; //In case player disconnect
         room[a].players.push(msg.sender); //Add a player
         room[a].playerCount++;
@@ -71,27 +71,26 @@ contract niuniu{
         }
     }}
     function DEAL(uint a)public{unchecked{
-        require(msg.sender==room[a].players[0]);
         require(room[a].balance==0);
+        require(msg.sender==room[a].players[0]);
         //Only host can deal and game is not being dealt yet
         (uint[52]memory table,uint hash,uint count,uint bs)=(
             [uint(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,
             28,31,41,12,42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11],
             uint(keccak256(abi.encodePacked(block.timestamp))),51,room[a].betSize);
-        uint ran;
-        address rp;
+        //address rp;
         for(uint i=0;i<room[a].players.length;i++){ //Number of active players in the room
-            rp=room[a].players[i];
+            address rp=room[a].players[i];
             if(player[msg.sender].balance>=bs){
             //Player is set to play and have enough money    
                 player[rp].balance-=bs; //Generate pool amount
                 room[a].balance+=bs;
                 //Only when they are choose to play the round and have enough tokens
                 for(uint j=0;j<5;j++){ //Only distribute 5 cards
-                    (ran,player[rp].cards[j],table[ran])=(hash%count,table[ran],table[count]);
+                    uint ran=hash%count;
+                    (player[rp].cards[j],table[ran])=(table[ran],table[count]);
                     //Pick the remaining cards & move the last position to replace the current position
-                    hash/=count; //Create different random
-                    count--; //Take away the last position
+                    (hash/=count,count--); //Create different random & Take away the last position
                 }
             }
         }
@@ -102,13 +101,12 @@ contract niuniu{
         require(msg.sender==rp[0]); //Host check only
         require(rb>0); //Dealt
         uint highest;
-        uint count;
         uint winnerCount;
         Player memory pi;
         for(uint i=0;i<rl;i++){ //Number of active players in the room
             pi=player[rp[i]];
             if(pi.cards[0]>0){ //If player has cards
-                count=0;
+                uint count=0;
                 for(uint j=0;j<5;j++){ //Go through every cards
                     count+=cardVal(pi.cards[j]); //Calculate single card value
                     player[rp[i]].cards[j]=0;

@@ -20,7 +20,7 @@ contract niuniu{
     address private _owner;
     mapping(uint=>Room)public room;
     mapping(address=>Player)public player;
-    IWAC private iWAC;
+    address private iwac;
     constructor(){unchecked{
         _owner=msg.sender;
         /* TESTING */
@@ -34,16 +34,16 @@ contract niuniu{
     }}
     function tokenAddress(address a)external{unchecked{
         require(_owner==msg.sender);
-        iWAC=IWAC(a);
+        iwac=a;
     }}
     function DEPOSIT(uint a)external{unchecked{
-        iWAC.BURN(msg.sender,a);
         player[msg.sender].balance+=a;
+        IWAC(iwac).BURN(msg.sender,a);
     }}
     function WITHDRAW(uint a)external{unchecked{
         require(player[msg.sender].balance>=a);
         player[msg.sender].balance-=a;
-        iWAC.MINT(msg.sender,a);
+        IWAC(iwac).MINT(msg.sender,a);
     }}
     function JOIN(uint a,uint b)public{unchecked{
         if(room[a].players.length<1){ //Initiate the room
@@ -54,9 +54,8 @@ contract niuniu{
         require(room[a].playerCount<5); //Not full
         require(player[msg.sender].room!=a); //Not same room
         require(a>0); //Not reserved room
-        player[msg.sender].room=a; //In case player disconnect
         room[a].players.push(msg.sender); //Add a player
-        room[a].playerCount++;
+        (room[a].playerCount++,player[msg.sender].room=a); //In case player disconnect
     }}
     function LEAVE(uint a,address b)public{unchecked{
         require(player[msg.sender].room==a||msg.sender==_owner);
@@ -99,9 +98,8 @@ contract niuniu{
         require(rb>0); //Dealt
         uint highest;
         uint winnerCount;
-        Player memory pi;
         for(uint i=0;i<rl;i++){ //Number of active players in the room
-            pi=player[rp[i]];
+            Player memory pi=player[rp[i]];
             if(pi.cards[0]>0){ //If player has cards
                 uint count=0;
                 for(uint j=0;j<5;j++){ //Go through every cards
@@ -132,8 +130,8 @@ contract niuniu{
     }}
     function getNiu(address a)public view returns(uint c,uint d,uint e,uint f){unchecked{
         c=99;
-        uint[5]memory ca=player[a].cards;
         for(uint i=0;i<5;i++)for(uint j=0;j<5;j++)for(uint k=0;k<5;k++){ //Loop cards 3 times
+            uint[5]memory ca=player[a].cards;
             uint c1=(cardVal(ca[i])+cardVal(ca[j])+cardVal(ca[k]))%10; //Add together multiple of 10
             if(c1==0&&i!=j&&j!=k&&i!=k){ //No repeated card
                 for(uint l=0;l<5;l++) //Find the addition of the remaining 2 cards value

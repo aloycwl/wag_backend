@@ -1,26 +1,25 @@
 /* DEPLOYMENT: JOIN & DEAL to external */
 pragma solidity^0.8.13;//SPDX-License-Identifier:None
 interface IWAC{
-    function BURN(address a,uint256 m)external;
-    function MINT(address a,uint256 m)external;
+    function BURN(address a,uint m)external;
+    function MINT(address a,uint m)external;
 } 
 contract niuniu{
     struct Room{
         address[]players; //First player automatically is host
-        uint256 betSize;
-        uint256 balance;
-        uint256 playerCount;
-        bool hidden;
+        uint betSize;
+        uint balance;
+        uint playerCount;
     }
     struct Player{
-        uint256[5]cards;
-        uint256 points;
-        uint256 room;
-        uint256 balance;
+        uint[5]cards;
+        uint points;
+        uint room;
+        uint balance;
     }
     IWAC private iWAC;
     address private _owner;
-    mapping(uint256=>Room)public room;
+    mapping(uint=>Room)public room;
     mapping(address=>Player)public player;
     constructor(){
         _owner=msg.sender;
@@ -37,54 +36,54 @@ contract niuniu{
         require(_owner==msg.sender);
         iWAC=IWAC(a);
     }
-    function DEPOSIT(uint256 a)external{
+    function DEPOSIT(uint a)external{
         iWAC.BURN(msg.sender,a);
         player[msg.sender].balance+=a;
     }
-    function WITHDRAW(uint256 a)external{
+    function WITHDRAW(uint a)external{
         require(player[msg.sender].balance>=a);
         player[msg.sender].balance-=a;
         iWAC.MINT(msg.sender,a);
     }
-    function JOIN(uint256 a,uint256 b)public{unchecked{
-        if(room[a].players.length==0){ //Initiate the room
-            require(b>=10); //Bet size must be more than 0
+    function JOIN(uint a,uint b)public{unchecked{
+        if(room[a].players.length<1){ //Initiate the room
+            require(b>9); //Bet size must be more than 0
             room[a].betSize=b; //Set the room bet size
         }
+        require(player[msg.sender].balance>=room[a].betSize); //Have money to bet
         require(room[a].playerCount<5); //Not full
         require(player[msg.sender].room!=a); //Not same room
         require(a!=0); //Not reserved room
-        require(player[msg.sender].balance>=room[a].betSize); //Have money to bet
         player[msg.sender].room=a; //In case player disconnect
         room[a].players.push(msg.sender); //Add a player
         room[a].playerCount++;
     }}
-    function LEAVE(uint256 a,address b)public{unchecked{
+    function LEAVE(uint a,address b)public{unchecked{
         require(player[msg.sender].room==a||msg.sender==_owner);
         player[b].room=0;
         if(room[a].players.length==1)delete room[a]; //Delete room if no more player
         else{
-            uint256 c; //Move players up
-            for(uint256 i=0;i<room[a].players.length;i++)if(room[a].players[i]==b)c=i;
+            uint c; //Move players up
+            for(uint i=0;i<room[a].players.length;i++)if(room[a].players[i]==b)c=i;
             room[a].players[c]=room[a].players[room[a].players.length-1];
             room[a].players.pop();
             room[a].playerCount--;
         }
     }}
-    function DEAL(uint256 a)public{unchecked{
-        Room memory ra=room[a];
-        require(msg.sender==ra.players[0]&&ra.balance==0);
+    function DEAL(uint a)public{unchecked{
+        require(msg.sender==room[a].players[0]);
+        require(room[a].balance==0);
         //Only host can deal and game is not being dealt yet
-        (uint256[52]memory table,uint256 hash,uint256 count,uint256 bs)=(
-            [uint256(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,
+        (uint[52]memory table,uint hash,uint count,uint bs)=(
+            [uint(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,
             28,31,41,12,42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11],
-            uint256(keccak256(abi.encodePacked(block.timestamp))),51,ra.betSize);
-        uint256 i;
-        uint256 j;
-        uint256 ran;
+            uint(keccak256(abi.encodePacked(block.timestamp))),51,room[a].betSize);
+        uint i;
+        uint j;
+        uint ran;
         address rp;
-        for(i=0;i<ra.players.length;i++){ //Number of active players in the room
-            rp=ra.players[i];
+        for(i=0;i<room[a].players.length;i++){ //Number of active players in the room
+            rp=room[a].players[i];
             if(player[msg.sender].balance>=bs){
             //Player is set to play and have enough money    
                 player[rp].balance-=bs; //Generate pool amount
@@ -99,15 +98,16 @@ contract niuniu{
             }
         }
     }}
-    function CHECK(uint256 a)external{unchecked{
-        (uint256 rb,address[]memory rp,uint256 rs)=(room[a].balance,room[a].players,room[a].betSize);
-        uint256 rl=rp.length;
-        require(msg.sender==rp[0]&&rb>0); //Only host can check & have dealt
-        uint256 highest;
-        uint256 i;
-        uint256 j;
-        uint256 count;
-        uint256 winnerCount;
+    function CHECK(uint a)external{unchecked{
+        (uint rb,address[]memory rp,uint rs)=(room[a].balance,room[a].players,room[a].betSize);
+        uint rl=rp.length;
+        require(msg.sender==rp[0]); //Host check only
+        require(rb>0); //Dealt
+        uint highest;
+        uint i;
+        uint j;
+        uint count;
+        uint winnerCount;
         Player memory pi;
         for(i=0;i<rl;i++){ //Number of active players in the room
             pi=player[rp[i]];
@@ -131,27 +131,27 @@ contract niuniu{
         }
         room[a].balance=0;
     }}
-    function getRoomInfo(uint256 a)external view returns(address[]memory b,uint256[25]memory c){
+    function getRoomInfo(uint a)external view returns(address[]memory b,uint[25]memory c){
         Room memory r=room[a];
         b=r.players; //Only get cards if there is a player
-        uint256 k;
+        uint k;
         Player memory p;
-        for(uint256 i=0;i<b.length;i++){
+        for(uint i=0;i<b.length;i++){
             p=player[b[i]];
-            for(uint256 j=0;j<5;j++){
+            for(uint j=0;j<5;j++){
                 c[k]=p.cards[j];
                 k++;
             }
         }
     }
-    function getNiu(address a)public view returns(uint256 c,uint256 d,uint256 e,uint256 f){unchecked{
+    function getNiu(address a)public view returns(uint c,uint d,uint e,uint f){unchecked{
         c=99;
-        uint256[5]memory ca=player[a].cards;
-        uint256 c1;
-        uint256 i;
-        uint256 j;
-        uint256 k;
-        uint256 l;
+        uint[5]memory ca=player[a].cards;
+        uint c1;
+        uint i;
+        uint j;
+        uint k;
+        uint l;
         for(i=0;i<5;i++)for(j=0;j<5;j++)for(k=0;k<5;k++){ //Loop cards 3 times
             c1=(cardVal(ca[i])+cardVal(ca[j])+cardVal(ca[k]))%10; //Add together multiple of 10
             if(c1==0&&i!=j&&j!=k&&i!=k){ //No repeated card
@@ -161,12 +161,12 @@ contract niuniu{
             }
         }
     }}
-    function cardVal(uint256 a)private pure returns(uint256){unchecked{
+    function cardVal(uint a)private pure returns(uint){unchecked{
         a=a%13;
         if(a>9)a=0;
         return a;
     }}
-    function getPlayerVal()external view returns(uint256[5]memory b){
-        for(uint256 i=0;i<5;i++)b[i]=cardVal(player[msg.sender].cards[i]);
+    function getPlayerVal()external view returns(uint[5]memory b){
+        for(uint i=0;i<5;i++)b[i]=cardVal(player[msg.sender].cards[i]);
     }
 }

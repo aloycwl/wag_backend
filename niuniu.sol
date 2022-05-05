@@ -15,7 +15,6 @@ contract niuniu{
     struct Player{
         uint256[5]cards;
         uint256 points;
-        bool playing;
         uint256 room;
         uint256 balance;
     }
@@ -28,6 +27,9 @@ contract niuniu{
         /* TESTING */
         player[msg.sender].balance=100;
         player[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2].balance=100;
+        player[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db].balance=100;
+        player[0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB].balance=100;
+        player[0x617F2E2fD72FD9D5503197092aC168c91465E7f2].balance=100;
         JOIN(1,10);
         DEAL(1);
     }
@@ -53,7 +55,7 @@ contract niuniu{
             room[a].betSize=b; //Set the room bet size
         }
         require(player[m].balance>=room[a].betSize);
-        (player[m].playing,player[m].room)=(true,a); //In case player disconnect
+        player[m].room=a; //In case player disconnect
         room[a].players.push(m); //Add a player
         room[a].playerCount++;
     }}
@@ -83,7 +85,7 @@ contract niuniu{
         address rp;
         for(i=0;i<ra.players.length;i++){ //Number of active players in the room
             rp=ra.players[i];
-            if(player[rp].playing&&player[msg.sender].balance>=bs){
+            if(player[msg.sender].balance>=bs){
             //Player is set to play and have enough money    
                 player[rp].balance-=bs; //Generate pool amount
                 room[a].balance+=bs;
@@ -98,8 +100,7 @@ contract niuniu{
         }
     }}
     function CHECK(uint256 a)external{unchecked{
-        Room memory r=room[a];
-        (uint256 rb,address[]memory rp,uint256 rs)=(r.balance,r.players,r.betSize);
+        (uint256 rb,address[]memory rp,uint256 rs)=(room[a].balance,room[a].players,room[a].betSize);
         uint256 rl=rp.length;
         require(msg.sender==rp[0]&&rb>0); //Only host can check & have dealt
         uint256 highest;
@@ -121,29 +122,15 @@ contract niuniu{
                 (player[rp[i]].points,highest)=(count,count>=highest?count:highest); //10 being highest
             }
         }
-        for(i=0;i<rl;i++){ //Getting number of winners
-            pi=player[rp[i]];
-            if(pi.points==highest)winnerCount++;
-            player[rp[0]].balance+=(rb*5/100); //5% for host (Maybe safemath issue)
-            winnerCount=rb*9/10/winnerCount; //Minus 5% for admin and divide winnings
-            for(i=0;i<rl;i++){ //Distribute tokens
-                if(player[rp[i]].points==highest)pi.balance+=winnerCount;
-                if(player[rp[i]].balance<rs)LEAVE(a,rp[i]);
-            }
+        for(i=0;i<rl;i++)if(player[rp[i]].points==highest)winnerCount++; //Getting number of winners
+        player[rp[0]].balance+=(rb*5/100); //5% for host (Maybe safemath issue)
+        winnerCount=rb*9/10/winnerCount; //Minus 5% for admin and divide winnings
+        for(i=0;i<rl;i++){ //Distribute tokens
+            if(player[rp[i]].points==highest)player[rp[i]].balance+=winnerCount;
+            if(player[rp[i]].balance<rs)LEAVE(a,rp[i]);
         }
         room[a].balance=0;
     }}
-    function getRoomInfo2(uint256 a)external view returns(address[]memory b,uint256[5]memory c
-        ,uint256[5]memory d,uint256[5]memory e,uint256[5]memory f,uint256[5]memory g){
-        Room memory r=room[a];
-        b=r.players; //Only get cards if there is a player
-        (uint256 h,address[]memory rp)=(b.length,r.players);
-        if(h>0)c=player[rp[0]].cards;
-        if(h>1)d=player[rp[1]].cards;
-        if(h>2)e=player[rp[2]].cards;
-        if(h>3)f=player[rp[3]].cards;
-        if(h>4)g=player[rp[4]].cards;
-    }
     function getRoomInfo(uint256 a)external view returns(address[]memory b,uint256[25]memory c){
         Room memory r=room[a];
         b=r.players; //Only get cards if there is a player
@@ -156,7 +143,6 @@ contract niuniu{
                 k++;
             }
         }
-        //if(h>0)c=player[rp[0]].cards;
     }
     function getNiu(address a)public view returns(uint256 c,uint256 d,uint256 e,uint256 f){unchecked{
         c=99;
@@ -175,10 +161,11 @@ contract niuniu{
             }
         }
     }}
-    function cardVal(uint256 a)private pure returns(uint256 c){
-        c=a%13;
-        c=c==0||c>9?10:c;
-    }
+    function cardVal(uint256 a)private pure returns(uint256){unchecked{
+        a=a%13;
+        if(a>9)a=0;
+        return a;
+    }}
     function getPlayerVal()external view returns(uint256[5]memory b){
         for(uint256 i=0;i<5;i++)b[i]=cardVal(player[msg.sender].cards[i]);
     }

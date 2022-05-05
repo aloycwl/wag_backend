@@ -47,16 +47,16 @@ contract niuniu{
         iWAC.MINT(msg.sender,a);
     }
     function JOIN(uint256 a,uint256 b)public{unchecked{
-        address m=msg.sender;
-        require(room[a].playerCount<5&&player[m].room!=a&&a!=0);
-        //Available room && not same room && not reserved room
         if(room[a].players.length==0){ //Initiate the room
             require(b>=10); //Bet size must be more than 0
             room[a].betSize=b; //Set the room bet size
         }
-        require(player[m].balance>=room[a].betSize);
-        player[m].room=a; //In case player disconnect
-        room[a].players.push(m); //Add a player
+        require(room[a].playerCount<5); //Not full
+        require(player[msg.sender].room!=a); //Not same room
+        require(a!=0); //Not reserved room
+        require(player[msg.sender].balance>=room[a].betSize); //Have money to bet
+        player[msg.sender].room=a; //In case player disconnect
+        room[a].players.push(msg.sender); //Add a player
         room[a].playerCount++;
     }}
     function LEAVE(uint256 a,address b)public{unchecked{

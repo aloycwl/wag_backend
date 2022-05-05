@@ -5,29 +5,29 @@ interface IWAC{
     function MINT(address a,uint m)external;
 } 
 contract niuniu{
-    struct Room{
-        address[]players; //First player automatically is host
-        uint betSize;
-        uint balance;
-        uint playerCount;
-    }
     struct Player{
         uint[5]cards;
         uint points;
         uint room;
         uint balance;
     }
-    IWAC private iWAC;
+    struct Room{
+        address[]players; //First player automatically is host
+        uint betSize;
+        uint balance;
+        uint playerCount;
+    }
     address private _owner;
     mapping(uint=>Room)public room;
     mapping(address=>Player)public player;
+    IWAC private iWAC;
     constructor(){unchecked{
         _owner=msg.sender;
         /* TESTING */
         player[msg.sender].balance=100;
-        player[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2].balance=100;
-        player[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db].balance=100;
-        player[0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB].balance=100;
+        player[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2].balance=
+        player[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db].balance=
+        player[0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB].balance=
         player[0x617F2E2fD72FD9D5503197092aC168c91465E7f2].balance=100;
         JOIN(1,10);
         DEAL(1);
@@ -71,9 +71,8 @@ contract niuniu{
         }
     }}
     function DEAL(uint a)public{unchecked{
-        require(room[a].balance==0);
-        require(msg.sender==room[a].players[0]);
-        //Only host can deal and game is not being dealt yet
+        require(room[a].balance==0); //Not in progress
+        require(msg.sender==room[a].players[0]); //Host only
         (uint[52]memory table,uint hash,uint count,uint bs)=(
             [uint(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,
             28,31,41,12,42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11],

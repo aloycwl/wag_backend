@@ -27,6 +27,7 @@ contract niuniu{
         _owner=msg.sender;
         /* TESTING */
         player[msg.sender].balance=100;
+        player[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2].balance=100;
         JOIN(1,10);
         DEAL(1);
     }
@@ -132,7 +133,7 @@ contract niuniu{
         }
         room[a].balance=0;
     }}
-    function getRoomInfo(uint256 a)external view returns(address[]memory b,uint256[5]memory c
+    function getRoomInfo2(uint256 a)external view returns(address[]memory b,uint256[5]memory c
         ,uint256[5]memory d,uint256[5]memory e,uint256[5]memory f,uint256[5]memory g){
         Room memory r=room[a];
         b=r.players; //Only get cards if there is a player
@@ -142,6 +143,20 @@ contract niuniu{
         if(h>2)e=player[rp[2]].cards;
         if(h>3)f=player[rp[3]].cards;
         if(h>4)g=player[rp[4]].cards;
+    }
+    function getRoomInfo(uint256 a)external view returns(address[]memory b,uint256[25]memory c){
+        Room memory r=room[a];
+        b=r.players; //Only get cards if there is a player
+        uint256 k;
+        Player memory p;
+        for(uint256 i=0;i<b.length;i++){
+            p=player[b[i]];
+            for(uint256 j=0;j<5;j++){
+                c[k]=p.cards[j];
+                k++;
+            }
+        }
+        //if(h>0)c=player[rp[0]].cards;
     }
     function getNiu(address a)public view returns(uint256 c,uint256 d,uint256 e,uint256 f){unchecked{
         c=99;

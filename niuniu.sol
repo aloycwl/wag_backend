@@ -1,8 +1,8 @@
 /* DEPLOYMENT: JOIN & DEAL to external */
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
 interface IWAC{
-    function BURN(address a,uint m)external;
-    function MINT(address a,uint m)external;
+    function BURN(address,uint)external;
+    function MINT(address,uint)external;
 } 
 contract niuniu{
     struct Player{
@@ -64,9 +64,8 @@ contract niuniu{
         else{
             uint c; //Move players up
             for(uint i=0;i<room[a].players.length;i++)if(room[a].players[i]==b)c=i;
-            room[a].players[c]=room[a].players[room[a].players.length-1];
+            (room[a].players[c]=room[a].players[room[a].players.length-1],room[a].playerCount--);
             room[a].players.pop();
-            room[a].playerCount--;
         }
     }}
     function DEAL(uint a)public{unchecked{
@@ -123,10 +122,7 @@ contract niuniu{
     function getRoomInfo(uint a)external view returns(address[]memory b,uint[25]memory c){unchecked{
         b=room[a].players; //Only get cards if there is a player
         uint k;
-        for(uint i=0;i<b.length;i++)for(uint j=0;j<5;j++){
-            c[k]=player[b[i]].cards[j];
-            k++;
-        }
+        for(uint i=0;i<b.length;i++)for(uint j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
     }}
     function getNiu(address a)public view returns(uint c,uint d,uint e,uint f){unchecked{
         c=99;

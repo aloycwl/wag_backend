@@ -52,9 +52,11 @@ contract guess_number{
             (roomHistory[a]=room[a],roomHistory[a].winningNum=winNum,b=0);
             delete room[a];
             for(uint i=0;i<12;i++)if(roomHistory[a].numbers[i]==winNum)b++; //Get number of winners
-            b=a*19/20/b;  
-            for(uint i=0;i<12;i++)if(roomHistory[a].numbers[i]==winNum){
-                player[roomHistory[a].players[i]].balance+=b;
+            b=a*12*19/20/b;
+            for(uint i=0;i<12;i++){
+                if(roomHistory[a].numbers[i]==winNum){
+                    player[roomHistory[a].players[i]].balance+=b;
+                }
                 Player storage p=player[roomHistory[a].players[i]];
                 for(uint j=0;j<p.bets.length;j++)if(p.bets[j].room==a){
                     p.bets[j]=p.bets[p.bets.length-1];
@@ -65,13 +67,11 @@ contract guess_number{
     }}
 
     function GetPlayer(address a)external view returns(uint b,uint[]memory c,uint[]memory d){unchecked{
-        b=player[a].balance;
         uint l=player[a].bets.length;
-        (c,d)=(new uint[](l),new uint[](l));
+        (b,c,d)=(player[a].balance,new uint[](l),new uint[](l));
         for(uint i=0;i<l;i++)(c[i]=player[a].bets[i].room,d[i]=player[a].bets[i].number);
     }}
-    function GetRoomHistory(uint a)external view returns(uint,uint[]memory,address[]memory){unchecked{
+    function GetRoomHistory(uint a)external view returns(uint,uint[]memory,address[]memory){
         return (roomHistory[a].winningNum,roomHistory[a].numbers,roomHistory[a].players);
-
-    }}
+    }
 }

@@ -8,7 +8,7 @@ contract guess_number{
     constructor(address a){
         iwac=a;
         _owner=msg.sender;
-        player[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db].balance=1000;
+        player[0x5B38Da6a701c568545dCfcB03FcB875f56beddC4].balance=1000;
     }
     struct Bet{
         uint room;
@@ -26,8 +26,8 @@ contract guess_number{
     address private iwac;
     address private _owner;
     mapping(uint=>Room)private room;
-    mapping(uint=>Room)public roomHistory;
-    mapping(address=>Player)public player;
+    mapping(uint=>Room)private roomHistory;
+    mapping(address=>Player)private player;
 
     function DEPOSIT(uint a)external{unchecked{
         player[msg.sender].balance+=a;
@@ -42,25 +42,36 @@ contract guess_number{
     function BET(uint a,uint b)external{unchecked{ //Room bet size = room number
         require(room[a].players.length<13);
         require(player[msg.sender].balance>=a);
-        if(room[a].players.length>0)require(b==room[a].numbers[0]);
         room[a].players.push(msg.sender);
         room[a].numbers.push(b);
         Bet memory bet;
         (player[msg.sender].balance-=a,bet.room=a,bet.number=b);
         player[msg.sender].bets.push(bet);
-        if(room[a].players.length>12){
+        if(room[a].players.length>11){
             uint winNum=uint(keccak256(abi.encodePacked(block.timestamp,block.coinbase)))%12+1;
-            (roomHistory[a],roomHistory[a].winningNum,b)=(room[a],winNum,0);
+            (roomHistory[a]=room[a],roomHistory[a].winningNum=winNum,b=0);
             delete room[a];
             for(uint i=0;i<12;i++)if(roomHistory[a].numbers[i]==winNum)b++; //Get number of winners
             b=a*19/20/b;  
-            for(uint i=0;i<12;i++)if(roomHistory[a].numbers[i]==winNum)player[roomHistory[a].players[i]].balance+=b;            
+            for(uint i=0;i<12;i++)if(roomHistory[a].numbers[i]==winNum){
+                player[roomHistory[a].players[i]].balance+=b;
+                Player storage p=player[roomHistory[a].players[i]];
+                for(uint j=0;j<p.bets.length;j++)if(p.bets[j].room==a){
+                    p.bets[j]=p.bets[p.bets.length-1];
+                    p.bets.pop();
+                }
+            }
         }
     }}
 
-    function GetPlayerBet(address a)external view returns(uint[]memory b,uint[]memory c){
+    function GetPlayer(address a)external view returns(uint b,uint[]memory c,uint[]memory d){unchecked{
+        b=player[a].balance;
         uint l=player[a].bets.length;
-        (b,c)=(new uint[](l),new uint[](l));
-        for(uint i=0;i<l;i++)(b[i]=player[a].bets[i].room,b[i]=player[a].bets[i].number);
-    }
+        (c,d)=(new uint[](l),new uint[](l));
+        for(uint i=0;i<l;i++)(c[i]=player[a].bets[i].room,d[i]=player[a].bets[i].number);
+    }}
+    function GetRoomHistory(uint a)external view returns(uint,uint[]memory,address[]memory){unchecked{
+        return (roomHistory[a].winningNum,roomHistory[a].numbers,roomHistory[a].players);
+
+    }}
 }

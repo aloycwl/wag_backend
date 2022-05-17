@@ -110,13 +110,9 @@ contract five_cards_largest{
         }
         room[a].balance=0;
     }}
-    function getRoomInfo(uint256 a)external view returns(address[]memory b,
-    uint256[5]memory c,uint256[5]memory d,uint256[5]memory e,uint256[5]memory f,uint256[5]memory g){
+    function getRoomInfo(uint a)external view returns(address[]memory b,uint[25]memory c){unchecked{
         b=room[a].players; //Only get cards if there is a player
-        if(room[a].players.length>0)c=player[room[a].players[0]].cards;
-        if(room[a].players.length>1)d=player[room[a].players[1]].cards;
-        if(room[a].players.length>2)e=player[room[a].players[2]].cards;
-        if(room[a].players.length>3)f=player[room[a].players[3]].cards;
-        if(room[a].players.length>4)g=player[room[a].players[4]].cards;
-    }
+        uint k;
+        for(uint i=0;i<b.length;i++)for(uint j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
+    }}
 }

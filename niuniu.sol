@@ -89,7 +89,7 @@ contract niuniu{
     }}
     function CHECK(uint a)external{unchecked{
         (uint rb,address[]memory rp,uint rs,uint rl)=
-            (room[a].balance,room[a].players,room[a].betSize,room[a].players.length);
+        (room[a].balance,room[a].players,room[a].betSize,room[a].players.length);
         require(msg.sender==rp[0]); //Host check only
         require(rb>0); //Dealt
         uint highest;
@@ -99,7 +99,7 @@ contract niuniu{
             if(pi.cards[0]>0){ //If player has cards
                 uint count=0;
                 for(uint j=0;j<5;j++){ //Go through every cards
-                    count+=cardVal(pi.cards[j]); //Calculate single card value
+                    count+=cardVal(pi.cards[j]); 
                     player[rp[i]].cards[j]=0;
                 }
                 count%=10; //Remove the front number

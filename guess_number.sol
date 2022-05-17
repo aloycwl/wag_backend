@@ -5,43 +5,29 @@ interface IWAC{
     function MINT(address,uint)external;
 }
 contract guess_number{
+    constructor(address a){
+        iwac=a;
+        _owner=msg.sender;
+        player[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db].balance=1000;
+    }
+    struct Bet{
+        uint room;
+        uint number;
+    }
     struct Player{
-        uint[]room;
+        Bet[]bets;
         uint balance;
     }
     struct Room{
-        address host; //First player automatically is host
-        uint betSize;
-        uint balance;
-        uint startNum;
-        uint endNum;
-        Bets[]bets;
-    }
-    struct Bets{
-        address player;
-        uint betNum;
+        uint winningNum;
+        uint[]numbers;
+        address[]players;
     }
     address private iwac;
     address private _owner;
-    mapping(uint=>Room)public room;
+    mapping(uint=>Room)private room;
+    mapping(uint=>Room)public roomHistory;
     mapping(address=>Player)public player;
-
-    function JOIN(uint a,uint b)public{unchecked{
-        if(room[a].host==address(0)){ //Initiate the room
-            require(b>4);
-            room[a].betSize=b;
-            room[a].host=msg.sender;
-        }
-        require(player[msg.sender].balance>=room[a].betSize); //Have money to bet
-        require(room[a].playerCount<5); //Not full
-        require(player[msg.sender].room!=a); //Not same room
-        require(a>0); //Not reserved room
-        room[a].players.push(msg.sender); //Add a player
-        (room[a].playerCount++,player[msg.sender].room=a); //In case player disconnect
-    }}
-
-
-
 
     function DEPOSIT(uint a)external{unchecked{
         player[msg.sender].balance+=a;
@@ -52,4 +38,29 @@ contract guess_number{
         player[msg.sender].balance-=a;
         IWAC(iwac).MINT(msg.sender,a);
     }}
+
+    function BET(uint a,uint b)external{unchecked{ //Room bet size = room number
+        require(room[a].players.length<13);
+        require(player[msg.sender].balance>=a);
+        if(room[a].players.length>0)require(b==room[a].numbers[0]);
+        room[a].players.push(msg.sender);
+        room[a].numbers.push(b);
+        Bet memory bet;
+        (player[msg.sender].balance-=a,bet.room=a,bet.number=b);
+        player[msg.sender].bets.push(bet);
+        if(room[a].players.length>12){
+            uint winNum=uint(keccak256(abi.encodePacked(block.timestamp,block.coinbase)))%12+1;
+            (roomHistory[a],roomHistory[a].winningNum,b)=(room[a],winNum,0);
+            delete room[a];
+            for(uint i=0;i<12;i++)if(roomHistory[a].numbers[i]==winNum)b++; //Get number of winners
+            b=a*19/20/b;  
+            for(uint i=0;i<12;i++)if(roomHistory[a].numbers[i]==winNum)player[roomHistory[a].players[i]].balance+=b;            
+        }
+    }}
+
+    function GetPlayerBet(address a)external view returns(uint[]memory b,uint[]memory c){
+        uint l=player[a].bets.length;
+        (b,c)=(new uint[](l),new uint[](l));
+        for(uint i=0;i<l;i++)(b[i]=player[a].bets[i].room,b[i]=player[a].bets[i].number);
+    }
 }

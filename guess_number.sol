@@ -26,7 +26,19 @@ contract guess_number{
     mapping(uint=>Room)public room;
     mapping(address=>Player)public player;
 
-
+    function JOIN(uint a,uint b)public{unchecked{
+        if(room[a].host==address(0)){ //Initiate the room
+            require(b>4);
+            room[a].betSize=b;
+            room[a].host=msg.sender;
+        }
+        require(player[msg.sender].balance>=room[a].betSize); //Have money to bet
+        require(room[a].playerCount<5); //Not full
+        require(player[msg.sender].room!=a); //Not same room
+        require(a>0); //Not reserved room
+        room[a].players.push(msg.sender); //Add a player
+        (room[a].playerCount++,player[msg.sender].room=a); //In case player disconnect
+    }}
 
 
 

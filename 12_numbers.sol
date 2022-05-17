@@ -4,7 +4,7 @@ interface IWAC{
     function BURN(address,uint)external;
     function MINT(address,uint)external;
 }
-contract guess_number{
+contract twelve_number{
     constructor(address a){
         iwac=a;
         _owner=msg.sender;

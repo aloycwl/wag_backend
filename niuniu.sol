@@ -17,11 +17,12 @@ contract niuniu{
         uint balance;
         uint playerCount;
     }
+    address private iwac;
     address private _owner;
     mapping(uint=>Room)public room;
     mapping(address=>Player)public player;
-    address private iwac;
-    constructor(){unchecked{
+    constructor(address a){unchecked{
+        iwac=a;
         _owner=msg.sender;
         /* TESTING */
         player[msg.sender].balance=100;
@@ -31,10 +32,6 @@ contract niuniu{
         player[0x617F2E2fD72FD9D5503197092aC168c91465E7f2].balance=100;
         JOIN(1,10);
         DEAL(1);
-    }}
-    function tokenAddress(address a)external{unchecked{
-        require(_owner==msg.sender);
-        iwac=a;
     }}
     function DEPOSIT(uint a)external{unchecked{
         player[msg.sender].balance+=a;

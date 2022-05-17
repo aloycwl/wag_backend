@@ -6,9 +6,7 @@ interface IWAC{
 }
 contract twelve_number{
     constructor(address a){
-        iwac=a;
-        _owner=msg.sender;
-        player[0x5B38Da6a701c568545dCfcB03FcB875f56beddC4].balance=1000;
+        (iwac,_owner)=(a,msg.sender);
     }
     struct Bet{
         uint room;
@@ -43,11 +41,11 @@ contract twelve_number{
         require(room[a].players.length<13);
         require(b<13);
         require(player[msg.sender].balance>=a);
-        room[a].players.push(msg.sender);
-        room[a].numbers.push(b);
         Bet memory bet;
         (player[msg.sender].balance-=a,bet.room=a,bet.number=b);
         player[msg.sender].bets.push(bet);
+        room[a].players.push(msg.sender);
+        room[a].numbers.push(b);
         if(room[a].players.length>11){
             uint winNum=uint(keccak256(abi.encodePacked(block.timestamp,block.coinbase)))%12+1;
             (roomHistory[a]=room[a],roomHistory[a].winningNum=winNum,b=0);

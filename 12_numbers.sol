@@ -41,6 +41,7 @@ contract guess_number{
 
     function BET(uint a,uint b)external{unchecked{ //Room bet size = room number
         require(room[a].players.length<13);
+        require(b<13);
         require(player[msg.sender].balance>=a);
         room[a].players.push(msg.sender);
         room[a].numbers.push(b);

@@ -54,9 +54,7 @@ contract guess_number{
             for(uint i=0;i<12;i++)if(roomHistory[a].numbers[i]==winNum)b++; //Get number of winners
             b=a*12*19/20/b;
             for(uint i=0;i<12;i++){
-                if(roomHistory[a].numbers[i]==winNum){
-                    player[roomHistory[a].players[i]].balance+=b;
-                }
+                if(roomHistory[a].numbers[i]==winNum)player[roomHistory[a].players[i]].balance+=b;
                 Player storage p=player[roomHistory[a].players[i]];
                 for(uint j=0;j<p.bets.length;j++)if(p.bets[j].room==a){
                     p.bets[j]=p.bets[p.bets.length-1];

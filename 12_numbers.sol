@@ -68,7 +68,7 @@ contract twelve_number{
         (b,c,d)=(player[a].balance,new uint[](l),new uint[](l));
         for(uint i=0;i<l;i++)(c[i]=player[a].bets[i].room,d[i]=player[a].bets[i].number);
     }}
-    function GetRoomHistory(uint a)external view returns(uint,uint[]memory,address[]memory){
-        return (roomHistory[a].winningNum,roomHistory[a].numbers,roomHistory[a].players);
+    function GetRoomHistory(uint a)external view returns(uint,uint[]memory){
+        return (roomHistory[a].winningNum,roomHistory[a].numbers);
     }
 }

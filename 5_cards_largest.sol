@@ -37,15 +37,15 @@ contract five_cards_largest{
         iWAC.MINT(msg.sender,a);
     }
     function JOIN(uint256 a,uint256 b)external{unchecked{
-        require(room[a].playerCount<5&&player[msg.sender].room!=a&&a!=0);
-        //Available room && not same room && not reserved room
-        if(room[a].players.length==0){ //Initiate the room
-            require(b>=10); //Bet size must be more than 0
-            room[a].betSize=b; //Set the room bet size
+        require(room[a].playerCount<5); //Available room && not same room && not reserved room
+        require(player[msg.sender].room!=a);
+        require(a!=0);
+        if(room[a].players.length==0){ //Initiate room, bet size > 0
+            require(b>=10);
+            room[a].betSize=b;
         }
         require(player[msg.sender].balance>=room[a].betSize);
-        player[msg.sender].playing=true;
-        player[msg.sender].room=a; //In case player disconnect
+        (player[msg.sender].playing,player[msg.sender].room)=(true,a); //In case player disconnect
         room[a].players.push(msg.sender); //Add a player
         room[a].playerCount++;
     }}

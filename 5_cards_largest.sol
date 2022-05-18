@@ -69,16 +69,12 @@ contract five_cards_largest{
         uint256 hash=uint256(keccak256(abi.encodePacked(block.timestamp))); //Generate random long number
         uint256 count=51; //Length of cards remaining
         for(uint256 i=0;i<room[a].players.length;i++) //Number of active players in the room
-        if(player[room[a].players[i]].playing&&player[msg.sender].balance>=room[a].betSize){
-            player[room[a].players[i]].balance-=room[a].betSize; //Generate pool amount
-            room[a].balance+=room[a].betSize;
+        if(player[room[a].players[i]].playing&&player[msg.sender].balance>=room[a].betSize){//Generate pool amount
+            (player[room[a].players[i]].balance-=room[a].betSize,room[a].balance+=room[a].betSize);
             //Only when they are choose to play the round and have enough tokens
             for(uint256 j=0;j<5;j++){ //Only distribute 5 cards
-                uint256 ran=hash%count; //Pick the remaining cards
-                player[room[a].players[i]].cards[j]=table[ran]; //Set the cards
-                table[ran]=table[count]; //Move the last position to replace the current position
-                hash/=count; //Create different random
-                count--; //Take away the last position
+                uint256 ran=hash%count; //Pick the remaining cards, set card, remove last position
+                (player[room[a].players[i]].cards[j]=table[ran],table[ran]=table[count],hash/=count,count--);
             }
         }
     }}
@@ -90,14 +86,9 @@ contract five_cards_largest{
             uint256 count;
             for(uint256 j=0;j<5;j++){ //Go through every cards
                 uint256 c=player[room[a].players[i]].cards[j]%13; //Calculate single card value
-                c==0||c>9?10:c;
-                count+=c;
-                player[room[a].players[i]].cards[j]=0;
-            }
-            count%=10; //Remove the front number
-            count=count==0?10:count;
-            player[room[a].players[i]].points=count; //10 being highest
-            highest=count>=highest?count:highest;
+                (count+=(c==0||c>9?10:c),player[room[a].players[i]].cards[j]=0);
+            } //Remove the front number, 10 being highest
+             (count%=10,count=count==0?10:count,player[room[a].players[i]].points=count,highest=count>=highest?count:highest);
         }
         uint256 winnerCount; //Getting number of winners
         for(uint256 i=0;i<room[a].players.length;i++)

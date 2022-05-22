@@ -66,19 +66,23 @@ contract niuniu{
     function DEAL(uint a)public{unchecked{
         require(msg.sender==room[a].players[0]); //Host only
         (uint[52]memory table,uint hash,uint c,uint bs,address[]memory rp)=(
-        [uint(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,
-        28,31,41,12,42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11],
+        [uint(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,28,31,41,12,
+        42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11],
         uint(keccak256(abi.encodePacked(block.timestamp))),51,room[a].betSize,room[a].players);
-        uint rl=rp.length;
-        Player storage pi;uint ran;uint rb;
-
-        for(uint i=0;i<rl;i++){ //Generate cards
-            (pi=player[rp[i]],pi.balance-=bs,rb+=bs); //Generate pool amount
+        uint ran;
+        uint rb; //Pool amount
+        for(uint i=0;i<rp.length;i++){ //Generate cards
+            Player storage pi=player[rp[i]];
+            (pi.balance-=bs,rb+=bs);
             for(uint j=0;j<5;j++)(ran=hash%c,pi.cards[j]=table[ran],table[ran]=table[c],hash/=c,c--);
         }
-        ran=0;
-        for(uint i=0;i<rl;i++){ //Get Niu
-            pi=player[rp[i]];
+        delete table;
+        delete hash;
+        delete ran;
+        for(uint i=0;i<rp.length;i++){ //Get Niu
+            Player storage pi=player[rp[i]];
+            delete pi.points;
+            delete pi.niu;
             uint[5]memory ca=pi.cards;
             uint j;
             uint k;
@@ -87,7 +91,7 @@ contract niuniu{
             while(j<5){
                 if(j!=k&&k!=l&&j!=l){ //Skip repeated numbers
                     c=(cV(ca[j])+cV(ca[k])+cV(ca[l]))%10; //Add together multiple of 10
-                    if(c==0){ //No repeated card
+                    if(c==0){ //In case of niu
                         for(uint m=0;m<5;m++)if(m!=j&&m!=k&&m!=l)c+=cV(ca[m]); //Remaining 2 cards
                         (c%=10,pi.points=c==0?10:c,pi.niu[0]=j,pi.niu[1]=k,pi.niu[2]=l);
                         break;
@@ -97,38 +101,17 @@ contract niuniu{
                 if(l==5)(l=0,k++);
                 if(k==5)(k=0,j++);
             }
-            ran=pi.points>ran?pi.points:ran;
+            if(c>ran)(ran=c,hash=1);else if(c==ran)hash++; //Number of winners
         }
-        c=0;
-        for(uint i=0;i<rl;i++)if(player[rp[i]].points==ran)c++; //Getting number of winners
-        (player[rp[0]].balance+=(rb*1/20),c=rb*9/10/c); //5% each for host and admin 
-        for(uint i=0;i<rl;i++){ //Distribute tokens
-            pi=player[rp[i]];
-            if(pi.points==ran)pi.balance+=c;
+        (player[rp[0]].balance+=(rb*1/20),hash=rb*9/10/hash); //5% each for host and admin 
+        for(uint i=0;i<rp.length;i++){ //Distribute tokens
+            Player storage pi=player[rp[i]];
+            if(pi.points==ran)pi.balance+=hash;
             if(pi.balance<bs)LEAVE(a,rp[i]);
         }
     }}
-    function getNiu(address a)public{unchecked{
-        uint[5]memory ca=player[a].cards;
-        uint i1;uint j1;uint k1;uint l;uint c1;uint c2;uint c3;uint c4;
-        while(i1<5){
-            if(i1!=j1&&j1!=k1&&i1!=k1){ //Skip repeated numbers
-                c1=(cV(ca[i1])+cV(ca[j1])+cV(ca[k1]))%10; //Add together multiple of 10
-                if(c1==0){ //No repeated card
-                    for(l=0;l<5;l++)if(l!=i1&&l!=j1&&l!=k1)c1+=cV(ca[l]); //Remaining 2 cards
-                    (c1%=10,c1=c1==0?cV(ca[0])==0&&cV(ca[1])==0&&cV(ca[2])==0&&cV(ca[3])==0&&cV(ca[4])==0?11:10:c1);
-                    (c2,c3,c4)=(i1,j1,k1); //Check if is super bull
-                    break;
-                }
-            }
-            k1++;
-            if(k1==5)(k1=0,j1++);
-            if(j1==5)(j1=0,i1++);
-        }
-        (player[a].points=c1,player[a].niu[0]=c2,player[a].niu[1]=c3,player[a].niu[2]=c4);
-    }}
     function cV(uint a)private pure returns(uint b){unchecked{
-        (a=a%13,b=a>9?0:a);
+        (a%=13,b=a>9?0:a);
     }}
     function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c,uint[]memory d){unchecked{
         (b=room[a].players,c=new uint[](b.length*5),d=new uint[](b.length*3));

@@ -7,6 +7,7 @@ interface IWAC{
 contract niuniu{
     struct Player{
         uint[5]cards;
+        uint[5]cardValue;
         uint[3]niu;
         uint points;
         uint room;
@@ -20,9 +21,18 @@ contract niuniu{
     address private _owner;
     mapping(uint=>Room)public room;
     mapping(address=>Player)public player;
+    uint[5][]private cb;
     constructor(address a){unchecked{
-        iwac=a;
-        _owner=msg.sender;
+        (iwac,_owner)=(a,msg.sender);
+        cb.push([1,2,3,4,5]);
+        cb.push([1,2,4,3,5]);
+        cb.push([1,2,5,3,4]);
+        cb.push([1,3,4,2,5]);
+        cb.push([1,3,5,2,4]);
+        cb.push([1,4,5,3,4]);
+        cb.push([2,3,4,1,5]);
+        cb.push([2,3,5,1,4]);
+        cb.push([3,4,5,1,2]);
         /* TESTING */
         player[msg.sender].balance=
         player[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2].balance=
@@ -74,50 +84,46 @@ contract niuniu{
         for(uint i=0;i<rp.length;i++){ //Generate cards
             Player storage pi=player[rp[i]];
             (pi.balance-=bs,rb+=bs);
-            for(uint j=0;j<5;j++)(ran=hash%c,pi.cards[j]=table[ran],table[ran]=table[c],hash/=c,c--);
+            for(uint j=0;j<5;j++)(ran=hash%c,pi.cards[j]=table[ran],pi.cardValue[j]=cV(table[ran]),
+            table[ran]=table[c],hash/=c,c--);
         }
-        delete table;
-        delete hash;
         delete ran;
+        delete hash;
+        delete table;
         for(uint i=0;i<rp.length;i++){ //Get Niu
-            Player storage pi=player[rp[i]];
-            delete pi.points;
-            delete pi.niu;
-            uint[5]memory ca=pi.cards;
-            uint j;
-            uint k;
-            uint l;
+            delete player[rp[i]].points;
+            delete player[rp[i]].niu;
+            uint[5]memory pc=player[rp[i]].cardValue;
             c=0;
-            while(j<5){
-                if(j!=k&&k!=l&&j!=l){ //Skip repeated numbers
-                    c=(cV(ca[j])+cV(ca[k])+cV(ca[l]))%10; //Add together multiple of 10
-                    if(c==0){ //In case of niu
-                        for(uint m=0;m<5;m++)if(m!=j&&m!=k&&m!=l)c+=cV(ca[m]); //Remaining 2 cards
-                        (c%=10,pi.points=c==0?10:c,pi.niu[0]=j,pi.niu[1]=k,pi.niu[2]=l);
-                        break;
-                    }
+            for(uint j=0;j<9;j++){
+                //c=(pc[cb[j][0]]+pc[cb[j][1]]+pc[cb[j][2]])%10;
+                if(c==0){
+                    //c=(pc[cb[j][3]]+pc[cb[j][4]])%10;
+                    player[rp[i]].points=c==0?10:c;
+                    player[rp[i]].niu[0]=cb[j][0];
+                    player[rp[i]].niu[1]=cb[j][1];
+                    player[rp[i]].niu[2]=cb[j][2];
+                    break;
                 }
-                l++;
-                if(l==5)(l=0,k++);
-                if(k==5)(k=0,j++);
             }
             if(c>ran)(ran=c,hash=1);else if(c==ran)hash++; //Number of winners
-        }
+        }/*
         (player[rp[0]].balance+=(rb*1/20),hash=rb*9/10/hash); //5% each for host and admin 
         for(uint i=0;i<rp.length;i++){ //Distribute tokens
             Player storage pi=player[rp[i]];
             if(pi.points==ran)pi.balance+=hash;
             if(pi.balance<bs)LEAVE(a,rp[i]);
-        }
+        }*/
     }}
-    function cV(uint a)private pure returns(uint b){unchecked{
-        (a%=13,b=a>9?0:a);
+    function cV(uint a)private pure returns(uint){unchecked{
+        a%=13;
+        return a>9?0:a;
     }}
     function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c,uint[]memory d){unchecked{
         (b=room[a].players,c=new uint[](b.length*5),d=new uint[](b.length*3));
         uint i;uint j;uint k;uint l;uint m;
         for(i=0;i<b.length;i++){
-            for(j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
+            for(j=0;j<5;j++)(c[k]=player[b[i]].cardValue[j],k++);
             for(l=0;l<3;l++)(d[m]=player[b[i]].niu[l],m++);
         }
     }}

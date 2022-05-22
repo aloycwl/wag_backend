@@ -1,6 +1,6 @@
 /* DEPLOYMENT: JOIN to external */
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
-interface IWAC{
+interface IWAG{
     function BURN(address,uint)external;
     function MINT(address,uint)external;
 } 
@@ -17,25 +17,25 @@ contract niuniu{
         address[]players; //First player automatically is host
         uint betSize;
     }
-    address private iwac;
+    address private iwag;
     address private _owner;
     mapping(uint=>Room)public room;
     mapping(address=>Player)public player;
     uint[5][9]private cb;
     constructor(address a){unchecked{
-        (iwac=a,_owner=msg.sender,cb[0]=[0,1,2,3,4],cb[1]=[0,1,3,4,3],cb[2]=[0,1,4,2,3],cb[3]=[0,2,3,1,4],
+        (iwag=a,_owner=msg.sender,cb[0]=[0,1,2,3,4],cb[1]=[0,1,3,4,3],cb[2]=[0,1,4,2,3],cb[3]=[0,2,3,1,4],
         cb[4]=[0,2,4,1,3],cb[5]=[0,3,4,1,2],cb[6]=[1,2,3,0,4],cb[7]=[1,3,4,2,4],cb[8]=[2,3,4,0,1]);
     }}
     function DEPOSIT(uint a)external{unchecked{
         player[msg.sender].balance+=a;
-        IWAC(iwac).BURN(msg.sender,a);
+        IWAG(iwag).BURN(msg.sender,a);
     }}
     function WITHDRAW(uint a)external{unchecked{
         require(player[msg.sender].balance>=a);
         player[msg.sender].balance-=a;
-        IWAC(iwac).MINT(msg.sender,a);
+        IWAG(iwag).MINT(msg.sender,a);
     }}
-    function JOIN(uint a,uint b)public{unchecked{
+    function JOIN(uint a,uint b)external{unchecked{
         if(room[a].players.length<1){ //Initiate the room
             require(b>9); //Bet size must be more than 0
             room[a].betSize=b; //Set the room bet size
@@ -58,7 +58,7 @@ contract niuniu{
             room[a].players.pop();
         }
     }}
-    function DEAL(uint a)public{unchecked{
+    function DEAL(uint a)external{unchecked{
         require(msg.sender==room[a].players[0]); //Host only
         (uint[52]memory table,uint hash,uint c,uint bs,address[]memory rp)=(
         [uint(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,28,31,41,12,

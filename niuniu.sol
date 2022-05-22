@@ -76,53 +76,42 @@ contract niuniu{
             (pi=player[rp[i]],pi.balance-=bs,rb+=bs); //Generate pool amount
             for(j=0;j<5;j++){ //Distribute 5 random & calculate highest
                 (ran=hash%c,pi.cards[j]=table[ran],table[ran]=table[c],hash/=c,c--);
-                if(j>3){
+                /*if(j>3){
                     (uint a1,uint a2,uint a3,uint a4)=getNiu2(rp[i]);
                     (pi.points=a1,pi.niu[0]=a2,pi.niu[1]=a3,pi.niu[2]=a4,highest=a1>=highest?a1:highest);
-                }
+                }*/
             }
         }
-        c=0;
+        /*c=0;
         for(i=0;i<rl;i++)if(player[rp[i]].points==highest)c++; //Getting number of winners
         (player[rp[0]].balance+=(rb*1/20),c=rb*9/10/c); //5% each for host and admin 
         for(i=0;i<rl;i++){ //Distribute tokens
             pi=player[rp[i]];
             if(pi.points==highest)pi.balance+=c;
             if(pi.balance<bs)LEAVE(a,rp[i]);
-        }
+        }*/
     }}
     function getRoomInfo(uint a)external view returns(address[]memory b,uint[25]memory c){unchecked{
         b=room[a].players; //Only get cards if there is a player
         uint i;uint j;uint k;
         for(i=0;i<b.length;i++)for(j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
     }}
-    function getNiu(address a)public view returns(uint c,uint d,uint e,uint f){unchecked{
+    function getNiu(address a)public{unchecked{
         uint[5]memory ca=player[a].cards;
-        uint i;uint j;uint k;uint l;uint c1;
-        for(i=0;i<5;i++)for(j=0;j<5;j++)for(k=0;k<5;k++){ //Loop cards 3 times
-            c1=(cV(ca[i])+cV(ca[j])+cV(ca[k]))%10; //Add together multiple of 10
-            if(c1==0&&i!=j&&j!=k&&i!=k){ //No repeated card
-                for(l=0;l<5;l++)if(l!=i&&l!=j&&l!=k)c1+=cV(ca[l]); //Remaining 2 cards
-                (c1%=10,c1=c1==0?cV(ca[0])==0&&cV(ca[1])==0&&cV(ca[2])==0&&cV(ca[3])==0&&cV(ca[4])==0?11:10:c1);
-                return(c1,i,j,k); //^Super Niu
-            }
-        }
-    }}
-    function getNiu2(address a)public view returns(uint c,uint d,uint e,uint f){unchecked{
-        uint[5]memory ca=player[a].cards;
-        uint i;uint j;uint k;uint l;uint c1;
+        uint i;uint j;uint k;uint l;uint c1;uint c2;uint c3;uint c4;
         while(i<5){
-        //for(i=0;i<5;i++)for(j=0;j<5;j++)for(k=0;k<5;k++){ //Loop cards 3 times
             c1=(cV(ca[i])+cV(ca[j])+cV(ca[k]))%10; //Add together multiple of 10
             if(c1==0&&i!=j&&j!=k&&i!=k){ //No repeated card
                 for(l=0;l<5;l++)if(l!=i&&l!=j&&l!=k)c1+=cV(ca[l]); //Remaining 2 cards
                 (c1%=10,c1=c1==0?cV(ca[0])==0&&cV(ca[1])==0&&cV(ca[2])==0&&cV(ca[3])==0&&cV(ca[4])==0?11:10:c1);
-                return(c1,i,j,k); //^Super Niu
+                (c2,c3,c4)=(i,j,k); //^Super Niu
+                break;
             }
             k++;
             if(k==5)(k=0,j++);
             if(j==5)(j=0,i++);
         }
+        (player[a].points=c1,player[a].niu[0]=c2,player[a].niu[1]=c3,player[a].niu[2]=c4);
     }}
     function cV(uint a)private pure returns(uint b){unchecked{
         (a=a%13,b=a>9?0:a);

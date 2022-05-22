@@ -77,8 +77,15 @@ contract niuniu{
             uint t;
             for(j=0;j<5;j++){ //Distribute 5 random & calculate highest
                 (ran=hash%c,pi.cards[j]=table[ran],table[ran]=table[c],hash/=c,c--,t+=cV(pi.cards[j]));
-                if(j>3)(t%=10,t=t==0?10:t,pi.points=t,highest=t>=highest?t:highest);
+                if(j>3){
+                    (uint a1,uint a2,uint a3,uint a4)=getNiu(rp[i]);
+                    (pi.points=a1,pi.niu[0]=a2,pi.niu[1]=a3,pi.niu[2]=a4);
+                }
             }
+        }
+        //if(j>3)(t%=10,t=t==0?10:t,pi.points=t,highest=t>=highest?t:highest);
+        for(i=0;i<rl;i++){
+
         }
         c=0;
         for(i=0;i<rl;i++)if(player[rp[i]].points==highest)c++; //Getting number of winners

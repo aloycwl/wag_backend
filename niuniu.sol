@@ -75,14 +75,24 @@ contract niuniu{
         (address[]memory roomPlayers,uint rs,uint rl)=
         (room[a].players,room[a].betSize,room[a].players.length);
 
-        uint i;uint j;uint ran;uint rb;address rp;
-        for(i=0;i<room[a].players.length;i++){ //Number of active players in the room
-            rp=room[a].players[i];
+        uint i;uint j;uint ran;uint rb;address rp;uint highest;uint winnerCount;
+        for(i=0;i<roomPlayers.length;i++){ //Number of active players in the room
+            rp=roomPlayers[i];
             Player storage pi=player[rp];
             if(pi.balance>=bs){ //Player with enough money
                 (pi.balance-=bs,rb+=bs); //Generate pool amount
-                for(j=0;j<5;j++) //Distribute 5 random & reducing cards
-                (ran=hash%count,pi.cards[j]=table[ran],table[ran]=table[count],hash/=count,count--);
+                uint total;
+                for(j=0;j<5;j++){ //Distribute 5 random & reducing cards
+                    ran=hash%count;
+                    pi.cards[j]=table[ran];
+                    table[ran]=table[count];
+                    hash/=count;
+                    count--;
+                    total+=cV(pi.cards[j]); //Go through every cards
+                    total%=10; //Remove the front number
+                    total=total==0?10:total;
+                    (pi.points,highest)=(total,count>=highest?count:highest);
+                }
             }
         }
     }}

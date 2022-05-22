@@ -1,12 +1,9 @@
 /* DEPLOYMENT: JOIN & DEAL to external */
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
-interface IWAC{
-    function BURN(address,uint)external;
-    function MINT(address,uint)external;
-}
+import"https://github.com/aloycwl/wag_backend/blob/main/more/erc20_interface.sol";
 contract twelve_number{
     constructor(address a){
-        (iwac,_owner)=(a,msg.sender);
+        (iwag,_owner)=(a,msg.sender);
     }
     struct Bet{
         uint room;
@@ -21,7 +18,7 @@ contract twelve_number{
         uint[]numbers;
         address[]players;
     }
-    address private iwac;
+    address private iwag;
     address private _owner;
     mapping(uint=>Room)private room;
     mapping(uint=>Room)private roomHistory;
@@ -29,12 +26,12 @@ contract twelve_number{
 
     function DEPOSIT(uint a)external{unchecked{
         player[msg.sender].balance+=a;
-        IWAC(iwac).BURN(msg.sender,a);
+        IWAG(iwag).BURN(msg.sender,a);
     }}
     function WITHDRAW(uint a)external{unchecked{
         require(player[msg.sender].balance>=a);
         player[msg.sender].balance-=a;
-        IWAC(iwac).MINT(msg.sender,a);
+        IWAG(iwag).MINT(msg.sender,a);
     }}
 
     function BET(uint a,uint b)external{unchecked{ //Room bet size = room number

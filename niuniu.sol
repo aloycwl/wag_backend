@@ -76,10 +76,10 @@ contract niuniu{
             (pi=player[rp[i]],pi.balance-=bs,rb+=bs); //Generate pool amount
             for(j=0;j<5;j++){ //Distribute 5 random & calculate highest
                 (ran=hash%c,pi.cards[j]=table[ran],table[ran]=table[c],hash/=c,c--);
-                /*if(j>3){
-                    (uint a1,uint a2,uint a3,uint a4)=getNiu2(rp[i]);
-                    (pi.points=a1,pi.niu[0]=a2,pi.niu[1]=a3,pi.niu[2]=a4,highest=a1>=highest?a1:highest);
-                }*/
+                if(j>3){
+                    getNiu(rp[i]);
+                    highest=pi.points>=highest?pi.points:highest;
+                }
             }
         }
         /*c=0;
@@ -91,10 +91,13 @@ contract niuniu{
             if(pi.balance<bs)LEAVE(a,rp[i]);
         }*/
     }}
-    function getRoomInfo(uint a)external view returns(address[]memory b,uint[25]memory c){unchecked{
-        b=room[a].players; //Only get cards if there is a player
-        uint i;uint j;uint k;
-        for(i=0;i<b.length;i++)for(j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
+    function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c,uint[]memory d){unchecked{
+        (b=room[a].players,c=new uint[](b.length*5),d=new uint[](b.length*3));
+        uint i;uint j;uint k;uint l;uint m;
+        for(i=0;i<b.length;i++){
+            for(j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
+            for(l=0;l<3;l++)(d[m]=player[b[i]].niu[l],m++);
+        }
     }}
     function getNiu(address a)public{unchecked{
         uint[5]memory ca=player[a].cards;

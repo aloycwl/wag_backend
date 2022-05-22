@@ -74,11 +74,10 @@ contract niuniu{
 
         for(i=0;i<rl;i++){ //Number of active players in the room
             (pi=player[rp[i]],pi.balance-=bs,rb+=bs); //Generate pool amount
-            //uint t;
             for(j=0;j<5;j++){ //Distribute 5 random & calculate highest
                 (ran=hash%c,pi.cards[j]=table[ran],table[ran]=table[c],hash/=c,c--);
                 if(j>3){
-                    (uint a1,uint a2,uint a3,uint a4)=getNiu(rp[i]);
+                    (uint a1,uint a2,uint a3,uint a4)=getNiu2(rp[i]);
                     (pi.points=a1,pi.niu[0]=a2,pi.niu[1]=a3,pi.niu[2]=a4,highest=a1>=highest?a1:highest);
                 }
             }
@@ -107,6 +106,22 @@ contract niuniu{
                 (c1%=10,c1=c1==0?cV(ca[0])==0&&cV(ca[1])==0&&cV(ca[2])==0&&cV(ca[3])==0&&cV(ca[4])==0?11:10:c1);
                 return(c1,i,j,k); //^Super Niu
             }
+        }
+    }}
+    function getNiu2(address a)public view returns(uint c,uint d,uint e,uint f){unchecked{
+        uint[5]memory ca=player[a].cards;
+        uint i;uint j;uint k;uint l;uint c1;
+        while(i<5){
+        //for(i=0;i<5;i++)for(j=0;j<5;j++)for(k=0;k<5;k++){ //Loop cards 3 times
+            c1=(cV(ca[i])+cV(ca[j])+cV(ca[k]))%10; //Add together multiple of 10
+            if(c1==0&&i!=j&&j!=k&&i!=k){ //No repeated card
+                for(l=0;l<5;l++)if(l!=i&&l!=j&&l!=k)c1+=cV(ca[l]); //Remaining 2 cards
+                (c1%=10,c1=c1==0?cV(ca[0])==0&&cV(ca[1])==0&&cV(ca[2])==0&&cV(ca[3])==0&&cV(ca[4])==0?11:10:c1);
+                return(c1,i,j,k); //^Super Niu
+            }
+            k++;
+            if(k==5)(k=0,j++);
+            if(j==5)(j=0,i++);
         }
     }}
     function cV(uint a)private pure returns(uint b){unchecked{

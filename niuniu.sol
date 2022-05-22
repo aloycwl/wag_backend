@@ -74,18 +74,14 @@ contract niuniu{
 
         for(i=0;i<rl;i++){ //Number of active players in the room
             (pi=player[rp[i]],pi.balance-=bs,rb+=bs); //Generate pool amount
-            uint t;
+            //uint t;
             for(j=0;j<5;j++){ //Distribute 5 random & calculate highest
-                (ran=hash%c,pi.cards[j]=table[ran],table[ran]=table[c],hash/=c,c--,t+=cV(pi.cards[j]));
+                (ran=hash%c,pi.cards[j]=table[ran],table[ran]=table[c],hash/=c,c--);
                 if(j>3){
                     (uint a1,uint a2,uint a3,uint a4)=getNiu(rp[i]);
-                    (pi.points=a1,pi.niu[0]=a2,pi.niu[1]=a3,pi.niu[2]=a4);
+                    (pi.points=a1,pi.niu[0]=a2,pi.niu[1]=a3,pi.niu[2]=a4,highest=a1>=highest?a1:highest);
                 }
             }
-        }
-        //if(j>3)(t%=10,t=t==0?10:t,pi.points=t,highest=t>=highest?t:highest);
-        for(i=0;i<rl;i++){
-
         }
         c=0;
         for(i=0;i<rl;i++)if(player[rp[i]].points==highest)c++; //Getting number of winners
@@ -102,7 +98,6 @@ contract niuniu{
         for(i=0;i<b.length;i++)for(j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
     }}
     function getNiu(address a)public view returns(uint c,uint d,uint e,uint f){unchecked{
-        c=99;
         uint[5]memory ca=player[a].cards;
         uint i;uint j;uint k;uint l;uint c1;
         for(i=0;i<5;i++)for(j=0;j<5;j++)for(k=0;k<5;k++){ //Loop cards 3 times
@@ -110,13 +105,11 @@ contract niuniu{
             if(c1==0&&i!=j&&j!=k&&i!=k){ //No repeated card
                 for(l=0;l<5;l++)if(l!=i&&l!=j&&l!=k)c1+=cV(ca[l]); //Remaining 2 cards
                 (c1%=10,c1=c1==0?cV(ca[0])==0&&cV(ca[1])==0&&cV(ca[2])==0&&cV(ca[3])==0&&cV(ca[4])==0?11:10:c1);
-                return(c1,i,j,k); //Super Niu
+                return(c1,i,j,k); //^Super Niu
             }
         }
     }}
-    function cV(uint a)private pure returns(uint){unchecked{
-        a=a%13;
-        if(a>9)a=0;
-        return a;
+    function cV(uint a)private pure returns(uint b){unchecked{
+        (a=a%13,b=a>9?0:a);
     }}
 }

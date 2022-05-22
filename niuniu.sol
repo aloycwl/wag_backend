@@ -15,7 +15,6 @@ contract niuniu{
     struct Room{
         address[]players; //First player automatically is host
         uint betSize;
-        uint balance;
         uint playerCount;
     }
     address private iwac;
@@ -55,8 +54,8 @@ contract niuniu{
         room[a].players.push(msg.sender); //Add a player
         (room[a].playerCount++,player[msg.sender].room=a); //In case player disconnect
     }}
-    function LEAVE(uint a,address b)public{unchecked{
-        require(player[msg.sender].room==a||msg.sender==_owner);
+    function LEAVE(uint a,address b)public{unchecked{ //Only host can kick
+        require(player[msg.sender].room==a||msg.sender==room[player[b].room].players[0]);
         player[b].room=0;
         if(room[a].players.length==1)delete room[a]; //Delete room if no more player
         else{
@@ -67,52 +66,49 @@ contract niuniu{
         }
     }}
     function DEAL(uint a)public{unchecked{
-        require(room[a].balance==0); //Not in progress
         require(msg.sender==room[a].players[0]); //Host only
         (uint[52]memory table,uint hash,uint count,uint bs)=(
         [uint(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,
         28,31,41,12,42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11],
         uint(keccak256(abi.encodePacked(block.timestamp))),51,room[a].betSize);
-        uint i;uint j;uint ran;address rp;
+
+        (address[]memory roomPlayers,uint rs,uint rl)=
+        (room[a].players,room[a].betSize,room[a].players.length);
+
+        uint i;uint j;uint ran;uint rb;address rp;
         for(i=0;i<room[a].players.length;i++){ //Number of active players in the room
             rp=room[a].players[i];
-            if(player[msg.sender].balance>=bs){ //Player with enough money
-                (player[rp].balance-=bs,room[a].balance+=bs); //Generate pool amount
-                for(j=0;j<5;j++){ //Only distribute 5 cards
-                    ran=hash%count;
-                    (player[rp].cards[j],table[ran])=(table[ran],table[count]); // Card selection -1
-                    (hash/=count,count--); //Create different random & Take away the last position
-                }
+            Player storage pi=player[rp];
+            if(pi.balance>=bs){ //Player with enough money
+                (pi.balance-=bs,rb+=bs); //Generate pool amount
+                for(j=0;j<5;j++) //Distribute 5 random & reducing cards
+                (ran=hash%count,pi.cards[j]=table[ran],table[ran]=table[count],hash/=count,count--);
             }
         }
     }}
     function CHECK(uint a)external{unchecked{
         (uint rb,address[]memory rp,uint rs,uint rl)=
-        (room[a].balance,room[a].players,room[a].betSize,room[a].players.length);
+        (0,room[a].players,room[a].betSize,room[a].players.length);
         require(msg.sender==rp[0]); //Host check only
         require(rb>0); //Dealt
         uint highest;uint winnerCount;uint i;uint j;
         for(i=0;i<rl;i++){ //Number of active players in the room
-            Player memory pi=player[rp[i]];
+            Player storage pi=player[rp[i]];
             if(pi.cards[0]>0){ //If player has cards
                 uint count=0;
-                for(j=0;j<5;j++){ //Go through every cards
-                    count+=cV(pi.cards[j]); 
-                    player[rp[i]].cards[j]=0;
-                }
+                for(j=0;j<5;j++)count+=cV(pi.cards[j]); //Go through every cards
                 count%=10; //Remove the front number
                 count=count==0?10:count;
-                (player[rp[i]].points,highest)=(count,count>=highest?count:highest); //10 being highest
+                (pi.points,highest)=(count,count>=highest?count:highest); //10 being highest
             }
         }
         for(i=0;i<rl;i++)if(player[rp[i]].points==highest)winnerCount++; //Getting number of winners
-        player[rp[0]].balance+=(rb*5/100); //5% for host (Maybe safemath issue)
+        player[rp[0]].balance+=(rb*5/100); //5% for host
         winnerCount=rb*9/10/winnerCount; //Minus 5% for admin and divide winnings
         for(i=0;i<rl;i++){ //Distribute tokens
             if(player[rp[i]].points==highest)player[rp[i]].balance+=winnerCount;
             if(player[rp[i]].balance<rs)LEAVE(a,rp[i]);
         }
-        room[a].balance=0;
     }}
     function getRoomInfo(uint a)external view returns(address[]memory b,uint[25]memory c){unchecked{
         b=room[a].players; //Only get cards if there is a player

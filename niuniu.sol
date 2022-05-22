@@ -7,6 +7,7 @@ interface IWAC{
 contract niuniu{
     struct Player{
         uint[5]cards;
+        uint[3]niu;
         uint points;
         uint room;
         uint balance;
@@ -69,19 +70,17 @@ contract niuniu{
         require(room[a].balance==0); //Not in progress
         require(msg.sender==room[a].players[0]); //Host only
         (uint[52]memory table,uint hash,uint count,uint bs)=(
-            [uint(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,
-            28,31,41,12,42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11],
-            uint(keccak256(abi.encodePacked(block.timestamp))),51,room[a].betSize);
-        for(uint i=0;i<room[a].players.length;i++){ //Number of active players in the room
-            address rp=room[a].players[i];
-            if(player[msg.sender].balance>=bs){
-            //Player is set to play and have enough money    
+        [uint(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,
+        28,31,41,12,42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11],
+        uint(keccak256(abi.encodePacked(block.timestamp))),51,room[a].betSize);
+        uint i;uint j;uint ran;address rp;
+        for(i=0;i<room[a].players.length;i++){ //Number of active players in the room
+            rp=room[a].players[i];
+            if(player[msg.sender].balance>=bs){ //Player with enough money
                 (player[rp].balance-=bs,room[a].balance+=bs); //Generate pool amount
-                //Only when they are choose to play the round and have enough tokens
-                for(uint j=0;j<5;j++){ //Only distribute 5 cards
-                    uint ran=hash%count;
-                    (player[rp].cards[j],table[ran])=(table[ran],table[count]);
-                    //Pick the remaining cards & move the last position to replace the current position
+                for(j=0;j<5;j++){ //Only distribute 5 cards
+                    ran=hash%count;
+                    (player[rp].cards[j],table[ran])=(table[ran],table[count]); // Card selection -1
                     (hash/=count,count--); //Create different random & Take away the last position
                 }
             }
@@ -92,14 +91,13 @@ contract niuniu{
         (room[a].balance,room[a].players,room[a].betSize,room[a].players.length);
         require(msg.sender==rp[0]); //Host check only
         require(rb>0); //Dealt
-        uint highest;
-        uint winnerCount;
-        for(uint i=0;i<rl;i++){ //Number of active players in the room
+        uint highest;uint winnerCount;uint i;uint j;
+        for(i=0;i<rl;i++){ //Number of active players in the room
             Player memory pi=player[rp[i]];
             if(pi.cards[0]>0){ //If player has cards
                 uint count=0;
-                for(uint j=0;j<5;j++){ //Go through every cards
-                    count+=cardVal(pi.cards[j]); 
+                for(j=0;j<5;j++){ //Go through every cards
+                    count+=cV(pi.cards[j]); 
                     player[rp[i]].cards[j]=0;
                 }
                 count%=10; //Remove the front number
@@ -107,10 +105,10 @@ contract niuniu{
                 (player[rp[i]].points,highest)=(count,count>=highest?count:highest); //10 being highest
             }
         }
-        for(uint i=0;i<rl;i++)if(player[rp[i]].points==highest)winnerCount++; //Getting number of winners
+        for(i=0;i<rl;i++)if(player[rp[i]].points==highest)winnerCount++; //Getting number of winners
         player[rp[0]].balance+=(rb*5/100); //5% for host (Maybe safemath issue)
         winnerCount=rb*9/10/winnerCount; //Minus 5% for admin and divide winnings
-        for(uint i=0;i<rl;i++){ //Distribute tokens
+        for(i=0;i<rl;i++){ //Distribute tokens
             if(player[rp[i]].points==highest)player[rp[i]].balance+=winnerCount;
             if(player[rp[i]].balance<rs)LEAVE(a,rp[i]);
         }
@@ -118,22 +116,23 @@ contract niuniu{
     }}
     function getRoomInfo(uint a)external view returns(address[]memory b,uint[25]memory c){unchecked{
         b=room[a].players; //Only get cards if there is a player
-        uint k;
-        for(uint i=0;i<b.length;i++)for(uint j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
+        uint i;uint j;uint k;
+        for(i=0;i<b.length;i++)for(j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
     }}
     function getNiu(address a)public view returns(uint c,uint d,uint e,uint f){unchecked{
         c=99;
-        for(uint i=0;i<5;i++)for(uint j=0;j<5;j++)for(uint k=0;k<5;k++){ //Loop cards 3 times
-            uint[5]memory ca=player[a].cards;
-            uint c1=(cardVal(ca[i])+cardVal(ca[j])+cardVal(ca[k]))%10; //Add together multiple of 10
+        uint[5]memory ca=player[a].cards;
+        uint i;uint j;uint k;uint l;uint c1;
+        for(i=0;i<5;i++)for(j=0;j<5;j++)for(k=0;k<5;k++){ //Loop cards 3 times
+            c1=(cV(ca[i])+cV(ca[j])+cV(ca[k]))%10; //Add together multiple of 10
             if(c1==0&&i!=j&&j!=k&&i!=k){ //No repeated card
-                for(uint l=0;l<5;l++) //Find the addition of the remaining 2 cards value
-                if(l!=i&&l!=j&&l!=k)c1+=cardVal(ca[l]);
-                return(c1%10,i,j,k);
+                for(l=0;l<5;l++)if(l!=i&&l!=j&&l!=k)c1+=cV(ca[l]); //Remaining 2 cards
+                (c1%=10,c1=c1==0?cV(ca[0])==0&&cV(ca[1])==0&&cV(ca[2])==0&&cV(ca[3])==0&&cV(ca[4])==0?11:10:c1);
+                return(c1,i,j,k); //Super Niu
             }
         }
     }}
-    function cardVal(uint a)private pure returns(uint){unchecked{
+    function cV(uint a)private pure returns(uint){unchecked{
         a=a%13;
         if(a>9)a=0;
         return a;

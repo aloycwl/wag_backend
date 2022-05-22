@@ -21,25 +21,10 @@ contract niuniu{
     address private _owner;
     mapping(uint=>Room)public room;
     mapping(address=>Player)public player;
-    uint[5][]private cb;
+    uint[5][9]private cb;
     constructor(address a){unchecked{
-        (iwac,_owner)=(a,msg.sender);
-        cb.push([1,2,3,4,5]);
-        cb.push([1,2,4,3,5]);
-        cb.push([1,2,5,3,4]);
-        cb.push([1,3,4,2,5]);
-        cb.push([1,3,5,2,4]);
-        cb.push([1,4,5,3,4]);
-        cb.push([2,3,4,1,5]);
-        cb.push([2,3,5,1,4]);
-        cb.push([3,4,5,1,2]);
-        /* TESTING */
-        player[msg.sender].balance=
-        player[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2].balance=
-        player[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db].balance=
-        player[0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB].balance=
-        player[0x617F2E2fD72FD9D5503197092aC168c91465E7f2].balance=100;
-        JOIN(1,10);
+        (iwac=a,_owner=msg.sender,cb[0]=[0,1,2,3,4],cb[1]=[0,1,3,4,3],cb[2]=[0,1,4,2,3],cb[3]=[0,2,3,1,4],
+        cb[4]=[0,2,4,1,3],cb[5]=[0,3,4,1,2],cb[6]=[1,2,3,0,4],cb[7]=[1,3,4,2,4],cb[8]=[2,3,4,0,1]);
     }}
     function DEPOSIT(uint a)external{unchecked{
         player[msg.sender].balance+=a;
@@ -84,46 +69,40 @@ contract niuniu{
         for(uint i=0;i<rp.length;i++){ //Generate cards
             Player storage pi=player[rp[i]];
             (pi.balance-=bs,rb+=bs);
-            for(uint j=0;j<5;j++)(ran=hash%c,pi.cards[j]=table[ran],pi.cardValue[j]=cV(table[ran]),
-            table[ran]=table[c],hash/=c,c--);
+            uint temp;
+            for(uint j=0;j<5;j++)(ran=hash%c,pi.cards[j]=table[ran],temp=table[ran]%13,
+            pi.cardValue[j]=temp>9?0:temp,table[ran]=table[c],hash/=c,c--);
         }
+        delete table;
         delete ran;
         delete hash;
-        delete table;
         for(uint i=0;i<rp.length;i++){ //Get Niu
             delete player[rp[i]].points;
             delete player[rp[i]].niu;
             uint[5]memory pc=player[rp[i]].cardValue;
-            c=0;
             for(uint j=0;j<9;j++){
-                //c=(pc[cb[j][0]]+pc[cb[j][1]]+pc[cb[j][2]])%10;
+                c=(pc[cb[j][0]]+pc[cb[j][1]]+pc[cb[j][2]])%10;
                 if(c==0){
-                    //c=(pc[cb[j][3]]+pc[cb[j][4]])%10;
-                    player[rp[i]].points=c==0?10:c;
-                    player[rp[i]].niu[0]=cb[j][0];
-                    player[rp[i]].niu[1]=cb[j][1];
-                    player[rp[i]].niu[2]=cb[j][2];
+                    (c=(pc[cb[j][3]]+pc[cb[j][4]])%10,player[rp[i]].points=c==0?10:c,player[rp[i]].niu[0]=cb[j][0],
+                    player[rp[i]].niu[1]=cb[j][1],player[rp[i]].niu[2]=cb[j][2]);
                     break;
                 }
+                delete c;
             }
             if(c>ran)(ran=c,hash=1);else if(c==ran)hash++; //Number of winners
-        }/*
+        }
         (player[rp[0]].balance+=(rb*1/20),hash=rb*9/10/hash); //5% each for host and admin 
         for(uint i=0;i<rp.length;i++){ //Distribute tokens
             Player storage pi=player[rp[i]];
             if(pi.points==ran)pi.balance+=hash;
             if(pi.balance<bs)LEAVE(a,rp[i]);
-        }*/
-    }}
-    function cV(uint a)private pure returns(uint){unchecked{
-        a%=13;
-        return a>9?0:a;
+        }
     }}
     function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c,uint[]memory d){unchecked{
         (b=room[a].players,c=new uint[](b.length*5),d=new uint[](b.length*3));
         uint i;uint j;uint k;uint l;uint m;
         for(i=0;i<b.length;i++){
-            for(j=0;j<5;j++)(c[k]=player[b[i]].cardValue[j],k++);
+            for(j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
             for(l=0;l<3;l++)(d[m]=player[b[i]].niu[l],m++);
         }
     }}

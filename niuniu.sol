@@ -1,9 +1,6 @@
 /* DEPLOYMENT: JOIN to external */
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
-interface IWAG{
-    function BURN(address,uint)external;
-    function MINT(address,uint)external;
-} 
+import"https://github.com/aloycwl/wag_backend/blob/main/more/erc20_interface.sol";
 contract niuniu{
     struct Player{
         uint[5]cards;
@@ -11,7 +8,6 @@ contract niuniu{
         uint[3]niu;
         uint points;
         uint room;
-        uint balance;
     }
     struct Room{
         address[]players; //First player automatically is host
@@ -27,12 +23,12 @@ contract niuniu{
         cb[4]=[0,2,4,1,3],cb[5]=[0,3,4,1,2],cb[6]=[1,2,3,0,4],cb[7]=[1,3,4,2,4],cb[8]=[2,3,4,0,1]);
     }}
     function DEPOSIT(uint a)external{unchecked{
-        player[msg.sender].balance+=a;
+        //player[msg.sender].balance+=a;
         IWAG(iwag).BURN(msg.sender,a);
     }}
     function WITHDRAW(uint a)external{unchecked{
-        require(player[msg.sender].balance>=a);
-        player[msg.sender].balance-=a;
+        //require(player[msg.sender].balance>=a);
+        //player[msg.sender].balance-=a;
         IWAG(iwag).MINT(msg.sender,a);
     }}
     function JOIN(uint a,uint b)external{unchecked{
@@ -40,7 +36,7 @@ contract niuniu{
             require(b>9); //Bet size must be more than 0
             room[a].betSize=b; //Set the room bet size
         }
-        require(player[msg.sender].balance>=room[a].betSize); //Have money to bet
+        require(IWAG(iwag).balanceOf(msg.sender)>=room[a].betSize); //Have money to bet
         require(room[a].players.length<5); //Not full
         require(player[msg.sender].room!=a); //Not same room
         require(a>0); //Not reserved room

@@ -2,8 +2,6 @@
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
 import"https://github.com/aloycwl/wag_backend/blob/main/more/erc20_interface.sol";
 contract TwelveNumber{
-    address private iwag;
-    address private _owner;
     mapping(uint=>Room)private room;
     mapping(uint=>Room)private roomHistory;
     mapping(address=>Player)private player;
@@ -16,24 +14,12 @@ contract TwelveNumber{
     }
     struct Player{
         Bet[]bets;
-        //uint balance;
     }
     struct Room{
         uint winningNum;
         uint[]numbers;
         address[]players;
     }
-/*
-    function DEPOSIT(uint a)external{unchecked{
-        player[msg.sender].balance+=a;
-        IWAG(iwag).BURN(msg.sender,a);
-    }}
-    function WITHDRAW(uint a)external{unchecked{
-        require(player[msg.sender].balance>=a);
-        player[msg.sender].balance-=a;
-        IWAG(iwag).MINT(msg.sender,a);
-    }}
-*/
     function BET(uint a,uint b)external{unchecked{ //Room bet size = room number
         require(room[a].players.length<13);
         require(b<13);
@@ -60,10 +46,10 @@ contract TwelveNumber{
         }
     }}
 
-    function GetPlayer(address a)external view returns(uint[]memory c,uint[]memory d){unchecked{
+    function GetPlayer(address a)external view returns(uint[]memory b,uint[]memory c){unchecked{
         uint l=player[a].bets.length;
-        (c,d)=(new uint[](l),new uint[](l));
-        for(uint i=0;i<l;i++)(c[i]=player[a].bets[i].room,d[i]=player[a].bets[i].number);
+        (b,c)=(new uint[](l),new uint[](l));
+        for(uint i=0;i<l;i++)(b[i],c[i])=(player[a].bets[i].room,player[a].bets[i].number);
     }}
     function GetRoomHistory(uint a)external view returns(uint,uint[]memory){
         return (roomHistory[a].winningNum,roomHistory[a].numbers);

@@ -1,7 +1,7 @@
 /* DEPLOYMENT: JOIN & DEAL to external */
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
-import"https://github.com/aloycwl/wag_backend/blob/main/more/erc20_interface.sol";
-contract TwelveNumber{
+import"https://github.com/aloycwl/wag_backend/blob/main/more/CasinoStandard.sol";
+contract TwelveNumber is CS{
     mapping(uint=>Room)private room;
     mapping(uint=>Room)private roomHistory;
     mapping(address=>Player)private player;

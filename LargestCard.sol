@@ -21,7 +21,7 @@ contract LargestCard is CS{
             require(b>9);
             room[a].betSize=b*1*18;
         }
-        //require(IWAG(iwag).balanceOf(msg.sender)>=room[a].betSize); //Have money to bet
+        require(IWAG(iwag).balanceOf(msg.sender)>=room[a].betSize); //Have money to bet
         require(room[a].players.length<20); //Not full
         require(player[msg.sender].room!=a); //Not same room
         require(a>0); //Not reserved room
@@ -46,37 +46,26 @@ contract LargestCard is CS{
         28,31,41,12,42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11],
         uint(keccak256(abi.encodePacked(block.timestamp))),51,room[a].betSize,room[a].players);
         uint rl=rp.length;
-        uint ran;uint rb;
-
+        uint ran;uint rb;uint highest;
         for(uint i=0;i<rl;i++){ //Number of active players in the room
-            //IWAG(iwag).BURN(rp[i],bs);
+            IWAG(iwag).BURN(rp[i],bs);
             rb+=bs; //Generate pool amount
             (ran=hash%c,player[rp[i]].card=table[ran],table[ran]=table[c],hash/=c,c--);
+
+            uint cardVal=player[rp[i]].card%13;
+            if(cardVal==0)cardVal=13;
+            uint mul=4-((player[rp[i]].card-cardVal)/13);
+            (mul=cardVal*4-(4-mul),player[rp[i]].points=cardVal==1?mul+52:mul);
+            if(player[rp[i]].points>highest)highest=player[rp[i]].points;
         }
-        /*c=0;
-        for(uint i=0;i<rl;i++)if(player[rp[i]].points==highest)c++; //Getting number of winners
-        c=rb*9/10/c; //5% each for host and admin 
-        IWAG(iwag).MINT(rp[0],rb*1/20);
-        for(uint i=0;i<rl;i++){ //Distribute tokens
-            if(player[rp[i]].points==highest)IWAG(iwag).MINT(rp[i],c);
+        IWAG(iwag).MINT(rp[0],rb*1/20); //5% each for host and admin, only 1 winner
+        for(uint i=0;i<rl;i++){
+            if(player[rp[i]].points==highest)IWAG(iwag).MINT(rp[i],rb*9/10);
             if(IWAG(iwag).balanceOf(rp[i])<bs)LEAVE(a,rp[i]);
-        }*/
+        }
     }}
     function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c){unchecked{
         (b=room[a].players,c=new uint[](b.length));
         for(uint i=0;i<b.length;i++)c[i]=player[b[i]].card;
     }}
-    function cV(uint a)private pure returns(uint){unchecked{
-        a%=13;
-        if(a>9)a=0;
-        return a;
-    }}
-    function getCardRank()public view returns(uint){
-        uint cardNum=player[msg.sender].card;
-        uint cardVal=cardNum%13;
-        if(cardVal==0)cardVal=13;
-        uint mul=4-((cardNum-cardVal)/13);
-        mul=cardVal*4-(4-mul);
-        return cardVal==1?mul+52:mul;
-    }
 }

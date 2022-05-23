@@ -1,7 +1,7 @@
 /* DEPLOYMENT: JOIN to external */
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
 import"https://github.com/aloycwl/wag_backend/blob/main/more/CasinoStandard.sol";
-contract niuniu is CS{
+contract BullBull is CS{
     struct Player{
         uint[5]cards;
         uint[5]cardValue;
@@ -13,8 +13,6 @@ contract niuniu is CS{
         address[]players; //First player automatically is host
         uint betSize;
     }
-    address private iwag;
-    address private _owner;
     mapping(uint=>Room)public room;
     mapping(address=>Player)public player;
     uint[5][9]private cb;

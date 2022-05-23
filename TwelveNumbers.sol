@@ -33,9 +33,9 @@ contract TwelveNumber is CS{
             (roomHistory[a]=room[a],roomHistory[a].winningNum=winNum,b=0);
             delete room[a];
             for(uint i=0;i<12;i++)if(roomHistory[a].numbers[i]==winNum)b++; //Get number of winners
-            b=a*12*19/20/b;
+            b=a*12*19/20/b*1e18;
             for(uint i=0;i<12;i++){
-                if(roomHistory[a].numbers[i]==winNum)IWAG(iwag).MINT(roomHistory[a].players[i],b*1e18);
+                if(roomHistory[a].numbers[i]==winNum)IWAG(iwag).MINT(roomHistory[a].players[i],b);
                 Player storage p=player[roomHistory[a].players[i]];
                 for(uint j=0;j<p.bets.length;j++)if(p.bets[j].room==a){
                     p.bets[j]=p.bets[p.bets.length-1];
@@ -44,7 +44,6 @@ contract TwelveNumber is CS{
             }
         }
     }}
-
     function GetPlayer(address a)external view returns(uint[]memory b,uint[]memory c){unchecked{
         uint l=player[a].bets.length;
         (b,c)=(new uint[](l),new uint[](l));

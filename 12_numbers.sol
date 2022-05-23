@@ -1,7 +1,7 @@
 /* DEPLOYMENT: JOIN & DEAL to external */
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
 import"https://github.com/aloycwl/wag_backend/blob/main/more/erc20_interface.sol";
-contract twelve_number{
+contract LargestCard{
     constructor(address a){
         (iwag,_owner)=(a,msg.sender);
     }

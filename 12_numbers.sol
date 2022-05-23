@@ -1,7 +1,12 @@
 /* DEPLOYMENT: JOIN & DEAL to external */
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
 import"https://github.com/aloycwl/wag_backend/blob/main/more/erc20_interface.sol";
-contract LargestCard{
+contract TwelveNumber{
+    address private iwag;
+    address private _owner;
+    mapping(uint=>Room)private room;
+    mapping(uint=>Room)private roomHistory;
+    mapping(address=>Player)private player;
     constructor(address a){
         (iwag,_owner)=(a,msg.sender);
     }
@@ -11,19 +16,14 @@ contract LargestCard{
     }
     struct Player{
         Bet[]bets;
-        uint balance;
+        //uint balance;
     }
     struct Room{
         uint winningNum;
         uint[]numbers;
         address[]players;
     }
-    address private iwag;
-    address private _owner;
-    mapping(uint=>Room)private room;
-    mapping(uint=>Room)private roomHistory;
-    mapping(address=>Player)private player;
-
+/*
     function DEPOSIT(uint a)external{unchecked{
         player[msg.sender].balance+=a;
         IWAG(iwag).BURN(msg.sender,a);
@@ -33,13 +33,13 @@ contract LargestCard{
         player[msg.sender].balance-=a;
         IWAG(iwag).MINT(msg.sender,a);
     }}
-
+*/
     function BET(uint a,uint b)external{unchecked{ //Room bet size = room number
         require(room[a].players.length<13);
         require(b<13);
-        require(player[msg.sender].balance>=a);
         Bet memory bet;
-        (player[msg.sender].balance-=a,bet.room=a,bet.number=b);
+        IWAG(iwag).BURN(msg.sender,a*1e18);
+        (bet.room=a,bet.number=b);
         player[msg.sender].bets.push(bet);
         room[a].players.push(msg.sender);
         room[a].numbers.push(b);
@@ -50,7 +50,7 @@ contract LargestCard{
             for(uint i=0;i<12;i++)if(roomHistory[a].numbers[i]==winNum)b++; //Get number of winners
             b=a*12*19/20/b;
             for(uint i=0;i<12;i++){
-                if(roomHistory[a].numbers[i]==winNum)player[roomHistory[a].players[i]].balance+=b;
+                if(roomHistory[a].numbers[i]==winNum)IWAG(iwag).MINT(roomHistory[a].players[i],b*1e18);
                 Player storage p=player[roomHistory[a].players[i]];
                 for(uint j=0;j<p.bets.length;j++)if(p.bets[j].room==a){
                     p.bets[j]=p.bets[p.bets.length-1];
@@ -60,9 +60,9 @@ contract LargestCard{
         }
     }}
 
-    function GetPlayer(address a)external view returns(uint b,uint[]memory c,uint[]memory d){unchecked{
+    function GetPlayer(address a)external view returns(uint[]memory c,uint[]memory d){unchecked{
         uint l=player[a].bets.length;
-        (b,c,d)=(player[a].balance,new uint[](l),new uint[](l));
+        (c,d)=(new uint[](l),new uint[](l));
         for(uint i=0;i<l;i++)(c[i]=player[a].bets[i].room,d[i]=player[a].bets[i].number);
     }}
     function GetRoomHistory(uint a)external view returns(uint,uint[]memory){

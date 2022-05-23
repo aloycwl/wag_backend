@@ -30,8 +30,8 @@ contract TwelveNumbers is CS{
             delete room[a];
             for(uint i=0;i<12;i++)if(roomHistory[a].numbers[i]==winNum)b++; //Get number of winners
             b=a*12*19/20/b*1e18;
-            for(uint i=0;i<12;i++)if(roomHistory[a].numbers[i]==winNum)IWAG(iwag).MINT(roomHistory[a].players[i],b);
             for(uint i=0;i<12;i++){
+                if(roomHistory[a].numbers[i]==winNum)IWAG(iwag).MINT(roomHistory[a].players[i],b);
                 delete player[roomHistory[a].players[i]];
             }
         }

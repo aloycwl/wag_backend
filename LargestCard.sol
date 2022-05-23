@@ -1,10 +1,7 @@
 /* DEPLOYMENT: JOIN to external */
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
-interface IWAC{
-    function BURN(address,uint)external;
-    function MINT(address,uint)external;
-} 
-contract niuniu{
+import"https://github.com/aloycwl/wag_backend/blob/main/more/CasinoStandard.sol";
+contract LargestCard is CS{
     struct Player{
         uint[5]cards;
         uint points;
@@ -15,22 +12,12 @@ contract niuniu{
         address[]players; //First player automatically is host
         uint betSize;
     }
-    address private iwac;
-    address private _owner;
     mapping(uint=>Room)public room;
     mapping(address=>Player)public player;
     constructor(address a){unchecked{
-        iwac=a;
-        _owner=msg.sender;
-        /* TESTING */
-        player[msg.sender].balance=
-        player[0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2].balance=
-        player[0x4B20993Bc481177ec7E8f571ceCaE8A9e22C02db].balance=
-        player[0x78731D3Ca6b7E34aC0F824c42a7cC18A495cabaB].balance=
-        player[0x617F2E2fD72FD9D5503197092aC168c91465E7f2].balance=100;
-        JOIN(1,10);
+        (iwag=a,_owner=msg.sender);
     }}
-    function DEPOSIT(uint a)external{unchecked{
+    /*function DEPOSIT(uint a)external{unchecked{
         player[msg.sender].balance+=a;
         IWAC(iwac).BURN(msg.sender,a);
     }}
@@ -38,7 +25,7 @@ contract niuniu{
         require(player[msg.sender].balance>=a);
         player[msg.sender].balance-=a;
         IWAC(iwac).MINT(msg.sender,a);
-    }}
+    }}*/
     function JOIN(uint a,uint b)public{unchecked{
         if(room[a].players.length<1){ //Initiate the room
             require(b>9); //Bet size must be more than 0
@@ -94,7 +81,7 @@ contract niuniu{
         for(i=0;i<b.length;i++)for(j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
     }}
     function cV(uint a)private pure returns(uint){unchecked{
-        a=a%13;
+        a%=13;
         if(a>9)a=0;
         return a;
     }}

@@ -3,10 +3,9 @@ pragma solidity>0.8.0;//SPDX-License-Identifier:None
 import"https://github.com/aloycwl/wag_backend/blob/main/more/CasinoStandard.sol";
 contract LargestCard is CS{
     struct Player{
-        uint[5]cards;
+        uint card;
         uint points;
         uint room;
-        uint balance;
     }
     struct Room{
         address[]players; //First player automatically is host
@@ -28,11 +27,11 @@ contract LargestCard is CS{
     }}*/
     function JOIN(uint a,uint b)public{unchecked{
         if(room[a].players.length<1){
-            require(b>9); //Bet size must be more than 0
-            room[a].betSize=b; //Set the room bet size
+            require(b>9);
+            room[a].betSize=b*1*18;
         }
-        require(player[msg.sender].balance>=room[a].betSize); //Have money to bet
-        require(room[a].players.length<5); //Not full
+        require(IWAG(iwag).balanceOf(msg.sender)>=room[a].betSize); //Have money to bet
+        require(room[a].players.length<20); //Not full
         require(player[msg.sender].room!=a); //Not same room
         require(a>0); //Not reserved room
         room[a].players.push(msg.sender); //Add a player
@@ -59,30 +58,32 @@ contract LargestCard is CS{
         Player storage pi;uint i;uint j;uint ran;uint rb;uint highest;
 
         for(i=0;i<rl;i++){ //Number of active players in the room
-            (pi=player[rp[i]],pi.balance-=bs,rb+=bs); //Generate pool amount
+            IWAG(iwag).BURN(rp[i],bs);
+            (pi=player[rp[i]],rb+=bs); //Generate pool amount
             uint t;
-            for(j=0;j<5;j++){ //Distribute 5 random & calculate highest
-                (ran=hash%c,pi.cards[j]=table[ran],table[ran]=table[c],hash/=c,c--,t+=cV(pi.cards[j]));
-                if(j>3)(t%=10,t=t==0?10:t,pi.points=t,highest=t>=highest?t:highest);
-            }
+            (ran=hash%c,pi.card=table[ran],table[ran]=table[c],hash/=c,c--);
+            //if(j>3)(t%=10,t=t==0?10:t,pi.points=t,highest=t>=highest?t:highest);
+            
         }
         c=0;
         for(i=0;i<rl;i++)if(player[rp[i]].points==highest)c++; //Getting number of winners
-        (player[rp[0]].balance+=(rb*1/20),c=rb*9/10/c); //5% each for host and admin 
+        c=rb*9/10/c; //5% each for host and admin 
+        IWAG(iwag).MINT(rp[0],rb*1/20);
         for(i=0;i<rl;i++){ //Distribute tokens
-            pi=player[rp[i]];
-            if(pi.points==highest)pi.balance+=c;
-            if(pi.balance<bs)LEAVE(a,rp[i]);
+            if(player[rp[i]].points==highest)IWAG(iwag).MINT(rp[i],c);
+            if(IWAG(iwag).balanceOf(rp[i])<bs)LEAVE(a,rp[i]);
         }
     }}
-    function getRoomInfo(uint a)external view returns(address[]memory b,uint[25]memory c){unchecked{
-        b=room[a].players; //Only get cards if there is a player
-        uint i;uint j;uint k;
-        for(i=0;i<b.length;i++)for(j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
+    function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c){unchecked{
+        (b=room[a].players,c=new uint[](b.length));
+        for(uint i=0;i<b.length;i++)c[i]=player[b[i]].card;
     }}
     function cV(uint a)private pure returns(uint){unchecked{
         a%=13;
         if(a>9)a=0;
         return a;
     }}
+    function getCardRank()public view returns(uint){
+
+    }
 }

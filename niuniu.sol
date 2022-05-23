@@ -23,9 +23,9 @@ contract niuniu{
         cb[4]=[0,2,4,1,3],cb[5]=[0,3,4,1,2],cb[6]=[1,2,3,0,4],cb[7]=[1,3,4,2,4],cb[8]=[2,3,4,0,1]);
     }}
     function JOIN(uint a,uint b)external{unchecked{
-        if(room[a].players.length<1){ //Initiate the room
-            require(b>9); //Bet size must be more than 0
-            room[a].betSize=b; //Set the room bet size
+        if(room[a].players.length<1){ //Set room bet size
+            require(b>9);
+            room[a].betSize=b*1e18;
         }
         require(IWAG(iwag).balanceOf(msg.sender)>=room[a].betSize); //Have money to bet
         require(room[a].players.length<5); //Not full

@@ -27,7 +27,7 @@ contract LargestCard is CS{
         IWAC(iwac).MINT(msg.sender,a);
     }}*/
     function JOIN(uint a,uint b)public{unchecked{
-        if(room[a].players.length<1){ //Initiate the room
+        if(room[a].players.length<1){
             require(b>9); //Bet size must be more than 0
             room[a].betSize=b; //Set the room bet size
         }

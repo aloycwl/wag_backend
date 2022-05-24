@@ -84,12 +84,14 @@ contract BullBull is CS{
             if(IWAG(iwag).balanceOf(rp[i])<bs)LEAVE(a,rp[i]);
         }
     }}
-    function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c,uint[]memory d){unchecked{
-        (b=room[a].players,c=new uint[](b.length*5),d=new uint[](b.length*3));
+    function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c,uint[]memory d,uint[]memory e){
+    unchecked{
+        (b=room[a].players,c=new uint[](b.length*5),d=new uint[](b.length*3),e=new uint[](b.length));
         uint i;uint j;uint k;uint l;uint m;
         for(i=0;i<b.length;i++){
             for(j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
             for(l=0;l<3;l++)(d[m]=player[b[i]].niu[l],m++);
+            e[i]=player[b[i]].points;
         }
     }}
 }

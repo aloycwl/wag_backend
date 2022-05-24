@@ -94,7 +94,4 @@ contract BullBull is CS{
             e[i]=player[b[i]].points;
         }
     }}
-    function test(address a)external view returns(uint[5]memory){
-        return player[a].cardValue;
-    }
 }

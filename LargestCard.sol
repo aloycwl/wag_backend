@@ -19,7 +19,7 @@ contract LargestCard is CS{
     function JOIN(uint a,uint b)public{unchecked{
         if(room[a].players.length<1){
             require(b>9);
-            room[a].betSize=b*1*18;
+            room[a].betSize=b*1e18;
         }
         require(IWAG(iwag).balanceOf(msg.sender)>=room[a].betSize); //Have money to bet
         require(room[a].players.length<20); //Not full
@@ -51,7 +51,6 @@ contract LargestCard is CS{
             IWAG(iwag).BURN(rp[i],bs);
             rb+=bs; //Generate pool amount
             (ran=hash%c,player[rp[i]].card=table[ran],table[ran]=table[c],hash/=c,c--);
-
             uint cardVal=player[rp[i]].card%13;
             if(cardVal==0)cardVal=13;
             uint mul=4-((player[rp[i]].card-cardVal)/13);
@@ -64,8 +63,8 @@ contract LargestCard is CS{
             if(IWAG(iwag).balanceOf(rp[i])<bs)LEAVE(a,rp[i]);
         }
     }}
-    function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c){unchecked{
-        (b=room[a].players,c=new uint[](b.length));
-        for(uint i=0;i<b.length;i++)c[i]=player[b[i]].card;
+    function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c,uint[]memory d){unchecked{
+        (b=room[a].players,c=new uint[](b.length),d=new uint[](b.length));
+        for(uint i=0;i<b.length;i++)(c[i],d[i])=(player[b[i]].card,player[b[i]].points);
     }}
 }

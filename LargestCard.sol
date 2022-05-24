@@ -63,8 +63,10 @@ contract LargestCard is CS{
             if(IWAG(iwag).balanceOf(rp[i])<bs)LEAVE(a,rp[i]);
         }
     }}
-    function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c,uint[]memory d){unchecked{
+    function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c,uint[]memory d,uint e){
+    unchecked{
         (b=room[a].players,c=new uint[](b.length),d=new uint[](b.length));
         for(uint i=0;i<b.length;i++)(c[i],d[i])=(player[b[i]].card,player[b[i]].points);
+        e=room[a].betSize;
     }}
 }

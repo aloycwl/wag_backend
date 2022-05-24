@@ -39,7 +39,7 @@ contract TwelveNumbers is CS{
     function GetPlayer(address a)external view returns(uint[]memory,uint[]memory){unchecked{
         return(player[a].room,player[a].number);
     }}
-    function GetRoomHistory(uint a)external view returns(uint,uint[]memory){
-        return (roomHistory[a].winningNum,roomHistory[a].numbers);
+    function GetRoomHistory(uint a)external view returns(uint,uint[]memory,uint){
+        return (roomHistory[a].winningNum,roomHistory[a].numbers,room[a].numbers.length);
     }
 }

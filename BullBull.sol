@@ -16,8 +16,8 @@ contract BullBull is CS{
     mapping(uint=>Room)public room;
     mapping(address=>Player)public player;
     uint[5][9]private cb;
-    constructor(address a){unchecked{
-        (iwag=a,_owner=msg.sender,cb[0]=[0,1,2,3,4],cb[1]=[0,1,3,4,3],cb[2]=[0,1,4,2,3],cb[3]=[0,2,3,1,4],
+    constructor(address a)CS(a){unchecked{
+        (cb[0]=[0,1,2,3,4],cb[1]=[0,1,3,4,3],cb[2]=[0,1,4,2,3],cb[3]=[0,2,3,1,4],
         cb[4]=[0,2,4,1,3],cb[5]=[0,3,4,1,2],cb[6]=[1,2,3,0,4],cb[7]=[1,3,4,2,4],cb[8]=[2,3,4,0,1]);
     }}
     function JOIN(uint a,uint b)external{unchecked{
@@ -25,7 +25,7 @@ contract BullBull is CS{
             require(b>9);
             room[a].betSize=b*1e18;
         }
-        require(IWAG(iwag).balanceOf(msg.sender)>=room[a].betSize); //Have money to bet
+        require(iwag.balanceOf(msg.sender)>=room[a].betSize); //Have money to bet
         require(room[a].players.length<5); //Not full
         require(player[msg.sender].room!=a); //Not same room
         require(a>0); //Not reserved room
@@ -53,7 +53,7 @@ contract BullBull is CS{
         uint rb; //Pool amount
         for(uint i=0;i<rp.length;i++){ //Generate cards
             Player storage pi=player[rp[i]];
-            IWAG(iwag).BURN(rp[i],bs);
+            iwag.BURN(rp[i],bs);
             rb+=bs;
             uint temp;
             for(uint j=0;j<5;j++)(ran=hash%c,pi.cards[j]=table[ran],temp=table[ran]%13,
@@ -77,11 +77,11 @@ contract BullBull is CS{
             }
             if(c>ran)(ran=c,hash=1);else if(c==ran)hash++; //Number of winners
         }
-        IWAG(iwag).MINT(rp[0],rb*1/20);
+        iwag.MINT(rp[0],rb*1/20);
         hash=rb*9/10/hash; //5% each for host and admin 
         for(uint i=0;i<rp.length;i++){ //Distribute tokens
-            if(player[rp[i]].points==ran)IWAG(iwag).MINT(rp[i],hash);
-            if(IWAG(iwag).balanceOf(rp[i])<bs)LEAVE(a,rp[i]);
+            if(player[rp[i]].points==ran)iwag.MINT(rp[i],hash);
+            if(iwag.balanceOf(rp[i])<bs)LEAVE(a,rp[i]);
         }
     }}
     function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c,

@@ -5,6 +5,10 @@ interface IWAG{
     function balanceOf(address)external view returns(uint256);
 }
 contract CS{
-    address internal iwag;
+    IWAG internal iwag;
     address internal _owner;
+    constructor(address a){
+        iwag=IWAG(a);
+        _owner=msg.sender;
+    }
 }

@@ -21,4 +21,7 @@ contract ERC20AC_WeAreGamblers is ERC20AC,OnlyAccess{
         (_balances[a]-=m,_totalSupply-=m);
         emit Transfer(a,address(0),m);
     }}
+    function REGISTER(address a,address b)external onlyAccess{
+        if(referrer[a]!=address(0))referrer[a]=b==address(0)?_owner:b;
+    }
 }

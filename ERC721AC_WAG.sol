@@ -22,7 +22,7 @@ contract ERC721_LSG is ERC721AC{
     function MINT(address a,address b,uint c)external{unchecked{
         (count++,_balances[a]+=1,_owners[count]=a);
         ierc20ac.REGISTER(a,b);
-        ierc20ac.MINT(a,c*1e22,0);
+        ierc20ac.MINT(a,c*1e18,0);
         emit Transfer(address(0),a,count);
     }}
 }

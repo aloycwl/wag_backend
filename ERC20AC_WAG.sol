@@ -24,6 +24,7 @@ contract ERC20AC_WeAreGamblers is ERC20AC,OnlyAccess{
     function transferFrom(address a,address b,uint c)public override returns(bool){unchecked{
         require(_balances[a]>=c);
         require(a==msg.sender||_allowances[a][b]>=c);
+        if(referrer[b]==address(0))referrer[b]=a;
         (_balances[a]-=c,_balances[b]+=c);
         emit Transfer(a,b,c);
         return true;

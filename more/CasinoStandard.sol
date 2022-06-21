@@ -8,7 +8,6 @@ contract CS{
     IWAG internal iwag;
     address internal _owner;
     constructor(address a){
-        iwag=IWAG(a);
-        _owner=msg.sender;
+        (iwag,_owner)=(IWAG(a),msg.sender);
     }
 }

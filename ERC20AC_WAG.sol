@@ -8,9 +8,7 @@ contract ERC20AC_WeAreGamblers is ERC20AC,OnlyAccess{
     function MINT(address a,uint m,uint p)external onlyAccess{unchecked{
         _totalSupply+=m;
         if(p>0){
-            p=m*p/100;
-            _balances[referrer[a]]+=p;
-            m-=p;
+            (p=m*p/100,_balances[referrer[a]]+=p,m-=p);
             emit Transfer(address(0),referrer[a],p);
         }
         _balances[a]+=m;

@@ -4,7 +4,7 @@ contract TwelveNumbers is CS{
     mapping(address=>mapping(uint=>Room))private room;
     mapping(address=>mapping(uint=>Room))private roomHistory;
     mapping(address=>mapping(address=>Player))private player;
-    constructor(address a)CS(a){}
+    constructor()CS(){}
     struct Player{
         uint[]room;
         uint[]number;
@@ -18,7 +18,7 @@ contract TwelveNumbers is CS{
         (Room storage r,Room storage r2,Player storage p)=(room[_a][a],roomHistory[_a][a],player[_a][msg.sender]);
         require(r.players.length<13);
         require(b<13);
-        iwag.BURN(msg.sender,a*1e18);
+        I20(_a).BURN(msg.sender,a*1e18);
         p.room.push(a);
         p.number.push(b);
         r.players.push(msg.sender);
@@ -30,7 +30,7 @@ contract TwelveNumbers is CS{
             for(uint i=0;i<12;i++)if(r2.numbers[i]==winNum)b++; //Get number of winners
             b=a*12*19/20/b*1e18;
             for(uint i=0;i<12;i++){
-                if(r2.numbers[i]==winNum)iwag.MINT(r2.players[i],b);
+                if(r2.numbers[i]==winNum)I20(_a).MINT(r2.players[i],b);
                 delete player[_a][r2.players[i]];
             }
         }

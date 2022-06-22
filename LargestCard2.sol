@@ -13,14 +13,14 @@ contract LargestCard is CS{
     }
     mapping(address=>mapping(uint=>Room))public room;
     mapping(address=>mapping(address=>Player))public player;
-    constructor(address a)CS(a){}
+    constructor()CS(){}
     function JOIN(address _a,uint a,uint b)public{unchecked{
         (Room storage r,Player storage p)=(room[_a][a],player[_a][msg.sender]);
         if(r.players.length<1){
             require(b>9);
             r.betSize=b*1e18;
         }
-        require(iwag.balanceOf(msg.sender)>=r.betSize); //Have money to bet
+        require(I20(_a).balanceOf(msg.sender)>=r.betSize); //Have money to bet
         require(r.players.length<20); //Not full
         require(p.room!=a); //Not same room
         require(a>0); //Not reserved room
@@ -49,7 +49,7 @@ contract LargestCard is CS{
         uint ran;uint rb;uint highest;
         for(uint i=0;i<rl;i++){ //Number of active players in the room
             Player storage p=player[_a][rp[i]];
-            iwag.BURN(rp[i],bs);
+            I20(_a).BURN(rp[i],bs);
             rb+=bs; //Generate pool amount
             (ran=hash%c,p.card=table[ran],table[ran]=table[c],hash/=c,c--);
             uint cardVal=p.card%13;
@@ -58,10 +58,10 @@ contract LargestCard is CS{
             (mul=cardVal*4-(4-mul),p.points=cardVal==1?mul+52:mul);
             if(p.points>highest)highest=p.points;
         }
-        iwag.MINT(rp[0],rb*1/20); //5% each for host and admin, only 1 winner
+        I20(_a).MINT(rp[0],rb*1/20); //5% each for host and admin, only 1 winner
         for(uint i=0;i<rl;i++){
-            if(player[_a][rp[i]].points==highest)iwag.MINT(rp[i],rb*9/10);
-            if(iwag.balanceOf(rp[i])<bs)LEAVE(_a,a,rp[i]);
+            if(player[_a][rp[i]].points==highest)I20(_a).MINT(rp[i],rb*9/10);
+            if(I20(_a).balanceOf(rp[i])<bs)LEAVE(_a,a,rp[i]);
         }
     }}
     function getRoomInfo(address _a,uint a)external view returns(address[]memory b,uint[]memory c,uint[]memory d,uint e){

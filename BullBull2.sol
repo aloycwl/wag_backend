@@ -33,27 +33,29 @@ contract BullBull is CS{
         r.players.push(msg.sender); //Add a player
         p.room=a;
     }}
-    function LEAVE(uint a,address b)public{unchecked{ //Only host can kick
-        require(player[msg.sender].room==a||msg.sender==room[player[b].room].players[0]);
-        player[b].room=0;
-        if(room[a].players.length==1)delete room[a]; //Delete room if no more player
+    function LEAVE(address _a,uint a,address b)public{unchecked{ //Only host can kick
+        (Player storage p,Room storage r)=(player[_a][b],room[_a][a]);
+        require(player[_a][msg.sender].room==a||msg.sender==room[_a][p.room].players[0]);
+        p.room=0;
+        if(r.players.length==1)delete room[_a][a]; //Delete room if no more player
         else{
             uint c; //Move players up
-            for(uint i=0;i<room[a].players.length;i++)if(room[a].players[i]==b)c=i;
-            (room[a].players[c]=room[a].players[room[a].players.length-1]);
-            room[a].players.pop();
+            for(uint i=0;i<r.players.length;i++)if(r.players[i]==b)c=i;
+            (r.players[c]=r.players[r.players.length-1]);
+            r.players.pop();
         }
     }}
-    function DEAL(uint a)external{unchecked{
-        require(msg.sender==room[a].players[0]); //Host only
+    function DEAL(address _a,uint a)external{unchecked{
+        Room memory r=room[_a][a];
+        require(msg.sender==r.players[0]); //Host only
         (uint[52]memory table,uint hash,uint c,uint bs,address[]memory rp)=(
         [uint(3),39,19,36,6,24,46,16,29,34,47,1,7,13,15,44,25,18,37,21,28,31,41,12,
         42,14,4,32,23,9,17,51,2,5,43,33,20,40,8,49,52,30,22,27,38,35,45,50,26,48,10,11],
-        uint(keccak256(abi.encodePacked(block.timestamp))),51,room[a].betSize,room[a].players);
+        uint(keccak256(abi.encodePacked(block.timestamp))),51,r.betSize,r.players);
         uint ran;
         uint rb; //Pool amount
         for(uint i=0;i<rp.length;i++){ //Generate cards
-            Player storage pi=player[rp[i]];
+            Player storage pi=player[_a][rp[i]];
             iwag.BURN(rp[i],bs);
             rb+=bs;
             uint temp;
@@ -64,14 +66,15 @@ contract BullBull is CS{
         delete ran;
         delete hash;
         for(uint i=0;i<rp.length;i++){ //Get Niu
-            delete player[rp[i]].points;
-            delete player[rp[i]].niu;
-            uint[5]memory pc=player[rp[i]].cardValue;
+            delete player[_a][rp[i]].points;
+            delete player[_a][rp[i]].niu;
+            Player storage p=player[_a][rp[i]];
+            uint[5]memory pc=p.cardValue;
             for(uint j=0;j<9;j++){
                 c=(pc[cb[j][0]]+pc[cb[j][1]]+pc[cb[j][2]])%10;
                 if(c==0){
-                    (c=(pc[cb[j][3]]+pc[cb[j][4]])%10,player[rp[i]].points=c==0?10:c,player[rp[i]].niu[0]=cb[j][0],
-                    player[rp[i]].niu[1]=cb[j][1],player[rp[i]].niu[2]=cb[j][2]);
+                    (c=(pc[cb[j][3]]+pc[cb[j][4]])%10,p.points=c==0?10:c,p.niu[0]=cb[j][0],
+                    p.niu[1]=cb[j][1],p.niu[2]=cb[j][2]);
                     break;
                 }
                 delete c;
@@ -81,19 +84,21 @@ contract BullBull is CS{
         iwag.MINT(rp[0],rb*1/20);
         hash=rb*9/10/hash; //5% each for host and admin 
         for(uint i=0;i<rp.length;i++){ //Distribute tokens
-            if(player[rp[i]].points==ran)iwag.MINT(rp[i],hash);
-            if(iwag.balanceOf(rp[i])<bs)LEAVE(a,rp[i]);
+            if(player[_a][rp[i]].points==ran)iwag.MINT(rp[i],hash);
+            if(iwag.balanceOf(rp[i])<bs)LEAVE(_a,a,rp[i]);
         }
     }}
-    function getRoomInfo(uint a)external view returns(address[]memory b,uint[]memory c,
+    function getRoomInfo(address _a,uint a)external view returns(address[]memory b,uint[]memory c,
     uint[]memory d,uint[]memory e,uint f){unchecked{
-        (b=room[a].players,c=new uint[](b.length*5),d=new uint[](b.length*3),e=new uint[](b.length));
+        Room memory r=room[_a][a];
+        (b=r.players,c=new uint[](b.length*5),d=new uint[](b.length*3),e=new uint[](b.length));
         uint i;uint j;uint k;uint l;uint m;
         for(i=0;i<b.length;i++){
-            for(j=0;j<5;j++)(c[k]=player[b[i]].cards[j],k++);
-            for(l=0;l<3;l++)(d[m]=player[b[i]].niu[l],m++);
-            e[i]=player[b[i]].points;
+            Player memory p=player[_a][b[i]];
+            for(j=0;j<5;j++)(c[k]=p.cards[j],k++);
+            for(l=0;l<3;l++)(d[m]=p.niu[l],m++);
+            e[i]=p.points;
         }
-        f=room[a].betSize;
+        f=r.betSize;
     }}
 }

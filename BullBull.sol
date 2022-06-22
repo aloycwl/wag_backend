@@ -1,6 +1,6 @@
 /* DEPLOYMENT: JOIN to external */
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
-import"https://github.com/aloycwl/wag_backend/blob/main/more/CasinoStandard.sol";
+import"more/CasinoStandard.sol";
 contract BullBull is CS{
     struct Player{
         uint[5]cards;

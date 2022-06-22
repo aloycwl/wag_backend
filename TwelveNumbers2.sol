@@ -1,5 +1,5 @@
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
-import"https://github.com/aloycwl/wag_backend/blob/main/more/CasinoStandard.sol";
+import"more/CasinoStandard.sol";
 contract TwelveNumbers is CS{
     mapping(address=>mapping(uint=>Room))private room;
     mapping(address=>mapping(uint=>Room))private roomHistory;

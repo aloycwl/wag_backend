@@ -29,7 +29,7 @@ contract TwelveNumbers is CS{
             delete room[_a][a];
             for(uint i=0;i<12;i++)if(r2.numbers[i]==winNum)b++; //Get number of winners
             b=a*57/5/b; //12*95/100
-            cashout()
+            cashout(_a,a*3/125); //5% fee
             for(uint i=0;i<12;i++){
                 if(r2.numbers[i]==winNum)I20(_a).transferFrom(address(this),r2.players[i],b);
                 delete player[_a][r2.players[i]];

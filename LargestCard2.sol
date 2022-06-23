@@ -24,7 +24,7 @@ contract LargestCard is CS{
         require(r.players.length<20); //Not full
         require(p.room!=a); //Not same room
         require(a>0); //Not reserved room
-        I20(_a).transferFrom(_a,address(this),r.betSize);
+        I20(_a).transferFrom(msg.sender,address(this),r.betSize);
         r.players.push(msg.sender); //Add a player
         p.room=a; //In case player disconnect
     }}

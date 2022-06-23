@@ -30,6 +30,7 @@ contract BullBull is CS{
         require(r.players.length<5); //Not full
         require(p.room!=a); //Not same room
         require(a>0); //Not reserved room
+        I20(_a).transferFrom(msg.sender,address(this),r.betSize);
         r.players.push(msg.sender); //Add a player
         p.room=a;
     }}
@@ -56,7 +57,6 @@ contract BullBull is CS{
         uint rb; //Pool amount
         for(uint i=0;i<rp.length;i++){ //Generate cards
             Player storage pi=player[_a][rp[i]];
-            I20(_a).BURN(rp[i],bs);
             rb+=bs;
             uint temp;
             for(uint j=0;j<5;j++)(ran=hash%c,pi.cards[j]=table[ran],temp=table[ran]%13,
@@ -81,10 +81,11 @@ contract BullBull is CS{
             }
             if(c>ran)(ran=c,hash=1);else if(c==ran)hash++; //Number of winners
         }
-        I20(_a).MINT(rp[0],rb*1/20);
-        hash=rb*9/10/hash; //5% each for host and admin 
+        I20(_a).transferFrom(address(this),rp[0],rb/20); //5% each for host and admin 
+        cashout(_a,rb/20);
+        hash=rb*9/10/hash; 
         for(uint i=0;i<rp.length;i++){ //Distribute tokens
-            if(player[_a][rp[i]].points==ran)I20(_a).MINT(rp[i],hash);
+            if(player[_a][rp[i]].points==ran)I20(_a).transferFrom(address(this),rp[i],hash);
             if(I20(_a).balanceOf(rp[i])<bs)LEAVE(_a,a,rp[i]);
         }
     }}

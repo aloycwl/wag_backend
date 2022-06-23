@@ -24,6 +24,7 @@ contract LargestCard is CS{
         require(r.players.length<20); //Not full
         require(p.room!=a); //Not same room
         require(a>0); //Not reserved room
+        I20(_a).transferFrom(_a,address(this),r.betSize);
         r.players.push(msg.sender); //Add a player
         p.room=a; //In case player disconnect
     }}
@@ -49,7 +50,6 @@ contract LargestCard is CS{
         uint ran;uint rb;uint highest;
         for(uint i=0;i<rl;i++){ //Number of active players in the room
             Player storage p=player[_a][rp[i]];
-            I20(_a).BURN(rp[i],bs);
             rb+=bs; //Generate pool amount
             (ran=hash%c,p.card=table[ran],table[ran]=table[c],hash/=c,c--);
             uint cardVal=p.card%13;
@@ -58,9 +58,10 @@ contract LargestCard is CS{
             (mul=cardVal*4-(4-mul),p.points=cardVal==1?mul+52:mul);
             if(p.points>highest)highest=p.points;
         }
-        I20(_a).MINT(rp[0],rb*1/20); //5% each for host and admin, only 1 winner
+        I20(_a).transferFrom(address(this),rp[0],rb/20); //5% each for host and admin, only 1 winner
+        cashout(_a,rb/20);
         for(uint i=0;i<rl;i++){
-            if(player[_a][rp[i]].points==highest)I20(_a).MINT(rp[i],rb*9/10);
+            if(player[_a][rp[i]].points==highest)I20(_a).transferFrom(address(this),rp[i],rb*9/10);
             if(I20(_a).balanceOf(rp[i])<bs)LEAVE(_a,a,rp[i]);
         }
     }}

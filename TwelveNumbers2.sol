@@ -18,7 +18,7 @@ contract TwelveNumbers is CS{
         (Room storage r,Room storage r2,Player storage p)=(room[_a][a],roomHistory[_a][a],player[_a][msg.sender]);
         require(r.players.length<13);
         require(b<13);
-        I20(_a).BURN(msg.sender,a*1e18);
+        I20(_a).transferFrom(msg.sender,address(this),a);
         p.room.push(a);
         p.number.push(b);
         r.players.push(msg.sender);
@@ -28,9 +28,10 @@ contract TwelveNumbers is CS{
             (r2=r,r2.winningNum=winNum,b=0);
             delete room[_a][a];
             for(uint i=0;i<12;i++)if(r2.numbers[i]==winNum)b++; //Get number of winners
-            b=a*12*19/20/b*1e18;
+            b=a*57/5/b; //12*95/100
+            cashout()
             for(uint i=0;i<12;i++){
-                if(r2.numbers[i]==winNum)I20(_a).MINT(r2.players[i],b);
+                if(r2.numbers[i]==winNum)I20(_a).transferFrom(address(this),r2.players[i],b);
                 delete player[_a][r2.players[i]];
             }
         }

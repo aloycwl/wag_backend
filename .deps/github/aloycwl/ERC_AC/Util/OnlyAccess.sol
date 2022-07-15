@@ -5,7 +5,7 @@ contract OnlyAccess {
     mapping(address=>uint)public _access;
 
     modifier onlyAccess(){
-        require(_access[msg.sender]==1);
+        require(_access[msg.sender]>0);
         _;
     }
 

@@ -6,14 +6,16 @@ contract ERC20AC{
     mapping(address=>mapping(address=>uint))internal _allowances;
     address internal _owner;
     uint internal _totalSupply;
-    constructor(){
-        _owner=msg.sender;
+    string private _name;
+    string private _sym;
+    constructor(string memory name_,string memory sym_){
+        (_owner,_name,_sym)=(msg.sender,name_,sym_);
     }
-    function name()external view virtual returns(string memory){
-        return"";
+    function name()external view returns(string memory){
+        return _name;
     }
-    function symbol()external view virtual returns(string memory){
-        return"";
+    function symbol()external view returns(string memory){
+        return _sym;
     }
     function decimals()external pure returns(uint){
         return 18;
@@ -39,6 +41,7 @@ contract ERC20AC{
     function transferFrom(address a,address b,uint c)public virtual returns(bool){unchecked{
         require(_balances[a]>=c);
         require(a==msg.sender||_allowances[a][b]>=c);
+        if(_allowances[a][b]>=c)_allowances[a][b]-=c;
         (_balances[a]-=c,_balances[b]+=c);
         emit Transfer(a,b,c);
         return true;

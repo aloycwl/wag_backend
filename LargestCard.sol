@@ -1,4 +1,3 @@
-/* DEPLOYMENT: JOIN to external */
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
 import"more/CasinoStandard.sol";
 contract LargestCard is CS{
@@ -19,7 +18,7 @@ contract LargestCard is CS{
             require(b>9);
             room[a].betSize=b*1e18;
         }
-        require(iwag.balanceOf(msg.sender)>=room[a].betSize); //Have money to bet
+        require(I20.balanceOf(msg.sender)>=room[a].betSize); //Have money to bet
         require(room[a].players.length<20); //Not full
         require(player[msg.sender].room!=a); //Not same room
         require(a>0); //Not reserved room

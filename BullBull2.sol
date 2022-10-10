@@ -93,11 +93,11 @@ contract BullBull is CS{
     uint[]memory d,uint[]memory e,uint f){unchecked{
         Room memory r=room[_a][a];
         (b=r.players,c=new uint[](b.length*5),d=new uint[](b.length*3),e=new uint[](b.length));
-        uint i;uint j;uint k;uint l;uint m;
+        uint i;uint k;uint m;
         for(i=0;i<b.length;i++){
             Player memory p=player[_a][b[i]];
-            for(j=0;j<5;j++)(c[k]=p.cards[j],k++);
-            for(l=0;l<3;l++)(d[m]=p.niu[l],m++);
+            for(uint j=0;j<5;j++)(c[k]=p.cards[j],k++);
+            for(uint j=0;j<3;j++)(d[m]=p.niu[j],m++);
             e[i]=p.points;
         }
         f=r.betSize;

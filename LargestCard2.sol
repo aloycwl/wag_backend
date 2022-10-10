@@ -1,4 +1,3 @@
-/* DEPLOYMENT: JOIN to external */
 pragma solidity>0.8.0;//SPDX-License-Identifier:None
 import"more/CasinoStandard.sol";
 contract LargestCard is CS{
@@ -50,8 +49,7 @@ contract LargestCard is CS{
         uint ran;uint rb;uint highest;
         for(uint i=0;i<rl;i++){ //Number of active players in the room
             Player storage p=player[_a][rp[i]];
-            rb+=bs; //Generate pool amount
-            (ran=hash%c,p.card=table[ran],table[ran]=table[c],hash/=c,c--);
+            (rb+=bs,ran=hash%c,p.card=table[ran],table[ran]=table[c],hash/=c,c--);
             uint cardVal=p.card%13;
             if(cardVal==0)cardVal=13;
             uint mul=4-((p.card-cardVal)/13);
